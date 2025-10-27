@@ -23,9 +23,37 @@ type PushAccountHook = {
 }
 
 export function usePushAccount(): PushAccountHook {
-  const { connectionStatus, handleConnectToPushWallet, handleUserLogOutEvent } =
-    usePushWalletContext()
-  const { pushChainClient, isInitialized } = usePushChainClient()
+  let walletContext: ReturnType<typeof usePushWalletContext> | null = null
+  let chainContext: ReturnType<typeof usePushChainClient> | null = null
+
+  try {
+    walletContext = usePushWalletContext()
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        '[usePushAccount] Push wallet context unavailable. Falling back to a disconnected state.'
+      )
+    }
+  }
+
+  try {
+    chainContext = usePushChainClient()
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        '[usePushAccount] Push Chain client context unavailable. Falling back to a disconnected state.'
+      )
+    }
+  }
+
+  const connectionStatus =
+    walletContext?.connectionStatus ??
+    PushUI.CONSTANTS.CONNECTION.STATUS.NOT_CONNECTED
+  const handleConnectToPushWallet = walletContext?.handleConnectToPushWallet
+  const handleUserLogOutEvent = walletContext?.handleUserLogOutEvent
+
+  const pushChainClient = chainContext?.pushChainClient ?? null
+  const isInitialized = chainContext?.isInitialized ?? false
 
   const isConnected =
     connectionStatus === PushUI.CONSTANTS.CONNECTION.STATUS.CONNECTED &&
@@ -36,6 +64,9 @@ export function usePushAccount(): PushAccountHook {
   const originAccount = pushChainClient?.universal.origin
 
   const connect = useCallback(() => {
+    if (!handleConnectToPushWallet) {
+      return
+    }
     if (
       connectionStatus === PushUI.CONSTANTS.CONNECTION.STATUS.NOT_CONNECTED ||
       connectionStatus === PushUI.CONSTANTS.CONNECTION.STATUS.RETRY
@@ -45,6 +76,9 @@ export function usePushAccount(): PushAccountHook {
   }, [connectionStatus, handleConnectToPushWallet])
 
   const disconnect = useCallback(() => {
+    if (!handleUserLogOutEvent) {
+      return
+    }
     if (isConnected) {
       handleUserLogOutEvent()
     }
