@@ -46,6 +46,11 @@ function ThemeAwarePushWalletProvider({
 }) {
   const { resolvedTheme } = useTheme()
 
+  const appLogoUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/images/push-campus-logo.png`
+      : '/images/push-campus-logo.png'
+
   const walletConfig = useMemo(() => {
     return {
       uid: UNIVERSAL_WALLET_UID,
@@ -78,9 +83,9 @@ function ThemeAwarePushWalletProvider({
     return {
       title: 'PushCampus',
       description: 'Learning communities powered by Universal Wallet connectivity.',
-      logoUrl: '/images/push-campus-logo.png'
+      logoUrl: appLogoUrl
     }
-  }, [])
+  }, [appLogoUrl])
 
   const themeMode =
     resolvedTheme === 'dark'
