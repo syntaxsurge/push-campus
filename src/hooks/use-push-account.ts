@@ -9,6 +9,8 @@ import {
   usePushWalletContext
 } from '@pushchain/ui-kit'
 
+import { UNIVERSAL_WALLET_UID } from '@/lib/config'
+
 type PushChainClient = ReturnType<typeof usePushChainClient>['pushChainClient']
 
 type PushAccountHook = {
@@ -27,7 +29,7 @@ export function usePushAccount(): PushAccountHook {
   let chainContext: ReturnType<typeof usePushChainClient> | null = null
 
   try {
-    walletContext = usePushWalletContext()
+    walletContext = usePushWalletContext(UNIVERSAL_WALLET_UID)
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn(
@@ -37,7 +39,7 @@ export function usePushAccount(): PushAccountHook {
   }
 
   try {
-    chainContext = usePushChainClient()
+    chainContext = usePushChainClient(UNIVERSAL_WALLET_UID)
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn(

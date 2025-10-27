@@ -10,6 +10,7 @@ import {
 import { ThemeProvider as NextThemeProvider, useTheme } from 'next-themes'
 
 import { ConvexClientProvider } from '@/providers/convex-client-provider'
+import { UNIVERSAL_WALLET_UID } from '@/lib/config'
 
 type AppProvidersProps = {
   children: ReactNode
@@ -47,7 +48,7 @@ function ThemeAwarePushWalletProvider({
 
   const walletConfig = useMemo(() => {
     return {
-      uid: 'primary',
+      uid: UNIVERSAL_WALLET_UID,
       network: PushUI.CONSTANTS.PUSH_NETWORK.TESTNET_DONUT,
       login: {
         wallet: {

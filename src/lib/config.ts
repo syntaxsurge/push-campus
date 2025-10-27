@@ -7,6 +7,9 @@
  * - https://pushchain.github.io/push-chain-website/pr-preview/pr-1067/docs/chain/quickstart/
  */
 
+/** Default UID used across Push Universal Wallet providers/hooks. */
+export const UNIVERSAL_WALLET_UID = 'primary' as const
+
 /** Default to Push Chain Donut testnet when chain id is not provided. */
 const DEFAULT_PUSH_CHAIN_ID = 42101
 

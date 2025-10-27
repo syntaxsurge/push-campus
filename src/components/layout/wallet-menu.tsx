@@ -9,10 +9,11 @@ import {
 import { useMemo } from 'react'
 
 import { Badge } from '@/components/ui/badge'
+import { UNIVERSAL_WALLET_UID } from '@/lib/config'
 
 function useWalletBadge() {
-  const { connectionStatus } = usePushWalletContext()
-  const { pushChainClient, isInitialized } = usePushChainClient()
+  const { connectionStatus } = usePushWalletContext(UNIVERSAL_WALLET_UID)
+  const { pushChainClient, isInitialized } = usePushChainClient(UNIVERSAL_WALLET_UID)
 
   const networkLabel = useMemo(() => {
     const chainNamespace = pushChainClient?.universal.origin.chain
@@ -45,7 +46,7 @@ export function WalletMenu() {
         </Badge>
       ) : null}
       <PushUniversalAccountButton
-        uid='primary'
+        uid={UNIVERSAL_WALLET_UID}
         connectButtonText='Connect Wallet'
         themeOverrides={{
           '--pwauth-btn-connect-border-radius': '0.75rem',
