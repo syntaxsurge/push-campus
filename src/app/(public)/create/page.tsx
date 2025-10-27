@@ -319,12 +319,12 @@ export default function Create() {
   }
 
   return (
-    <div className='relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-muted/30'>
-      {/* Decorative background elements */}
+    <div className='relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-muted/20'>
+      {/* Enhanced decorative background with logo blue */}
       <div className='absolute inset-0 overflow-hidden'>
-        <div className='absolute -left-4 top-0 h-72 w-72 rounded-full bg-primary/5 blur-3xl' />
-        <div className='absolute -right-4 top-1/4 h-96 w-96 rounded-full bg-accent/5 blur-3xl' />
-        <div className='absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-primary/5 blur-3xl' />
+        <div className='absolute -left-4 top-0 h-72 w-72 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue)/0.15),_transparent_65%)] blur-3xl' />
+        <div className='absolute -right-4 top-1/4 h-96 w-96 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue-light)/0.12),_transparent_65%)] blur-3xl' />
+        <div className='absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue)/0.1),_transparent_70%)] blur-3xl' />
       </div>
 
       <div className='relative mx-auto max-w-6xl px-6 py-12'>
@@ -333,11 +333,13 @@ export default function Create() {
           <div className='mb-6 flex justify-center'>
             <Logo className='text-2xl' />
           </div>
-          <h1 className='mb-4 text-5xl font-bold tracking-tight text-foreground md:text-6xl'>
-            Launch your community
+          <h1 className='mb-4 text-5xl font-bold tracking-tight md:text-6xl'>
+            <span className='bg-gradient-to-r from-foreground via-brand-blue-dark to-brand-blue-light bg-clip-text text-transparent'>
+              Create Your Universal App
+            </span>
           </h1>
           <p className='mx-auto max-w-2xl text-lg text-muted-foreground'>
-            Build, engage, and monetize your community with powerful tools designed for modern creators
+            Deploy once on Push Chain. Reach learners across <span className='font-semibold text-foreground'>Ethereum, Solana, Base, and 15+ chains</span>—with any wallet, any token, and zero friction.
           </p>
         </div>
 
@@ -362,30 +364,30 @@ export default function Create() {
           {/* Features Grid */}
           <div className='mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
             {[
-              { icon: '🚀', title: 'Drive Engagement', desc: 'Keep your community active' },
-              { icon: '💖', title: 'Easy Setup', desc: 'Launch in minutes' },
-              { icon: '💸', title: 'Monetize', desc: 'Push Chain-native payments' },
-              { icon: '📱', title: 'Mobile Ready', desc: 'iOS & Android apps' },
-              { icon: '🌍', title: 'Global Reach', desc: 'Connect worldwide' },
-              { icon: '🎓', title: 'Course Builder', desc: 'Built-in classroom' }
+              { icon: '🌐', title: 'Universal Access', desc: 'Reach users on 15+ chains' },
+              { icon: '💎', title: 'Any Wallet, Any Token', desc: 'No forced switching' },
+              { icon: '🔗', title: 'Shared-State L1', desc: 'Powered by Push Chain' },
+              { icon: '⚡', title: 'Zero Friction', desc: 'No bridges or relayers' },
+              { icon: '🎓', title: 'Built-In Classroom', desc: 'Courses & credentials' },
+              { icon: '🚀', title: 'Deploy Once', desc: 'Instant cross-chain reach' }
             ].map((feature, i) => (
               <div
                 key={i}
-                className='rounded-xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm transition-all hover:bg-card/80 hover:shadow-md'
+                className='group rounded-xl border border-border/40 bg-card/60 p-4 backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-card/80 hover:shadow-md hover:shadow-primary/5'
               >
                 <div className='mb-2 text-2xl'>{feature.icon}</div>
-                <h3 className='mb-1 font-semibold text-foreground'>{feature.title}</h3>
+                <h3 className='mb-1 font-semibold text-foreground group-hover:text-primary transition-colors'>{feature.title}</h3>
                 <p className='text-xs text-muted-foreground'>{feature.desc}</p>
               </div>
             ))}
           </div>
 
           {/* Form Card */}
-          <div className='rounded-2xl border border-border/50 bg-card/80 p-8 shadow-2xl backdrop-blur-sm md:p-10'>
+          <div className='rounded-2xl border border-primary/20 bg-card/80 p-8 shadow-2xl shadow-primary/5 backdrop-blur-xl md:p-10'>
             <div className='mb-8'>
-              <h2 className='text-2xl font-bold text-foreground'>Group Details</h2>
+              <h2 className='text-2xl font-bold text-foreground'>Community Details</h2>
               <p className='mt-2 text-sm text-muted-foreground'>
-                Fill in the information below to create your community
+                Configure your universal learning community. Once deployed, it'll be accessible across all supported chains.
               </p>
             </div>
 
@@ -586,13 +588,13 @@ export default function Create() {
                   <Button
                     type='submit'
                     disabled={isProcessing}
-                    className='h-12 w-full text-base font-semibold uppercase tracking-wide'
+                    className='h-12 w-full bg-gradient-to-r from-brand-blue to-brand-blue-light text-base font-semibold uppercase tracking-wide hover:opacity-90 shadow-lg shadow-primary/20'
                     size='lg'
                   >
-                    {isProcessing ? 'Creating Your Community...' : 'Create Community'}
+                    {isProcessing ? 'Deploying Universal App...' : 'Deploy Universal App'}
                   </Button>
                   <p className='mt-3 text-center text-xs text-muted-foreground'>
-                    By creating a community, you agree to our terms of service
+                    By deploying, you agree to our terms. Your app will be accessible across all supported chains.
                   </p>
                 </div>
               </form>

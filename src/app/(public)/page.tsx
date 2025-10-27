@@ -11,59 +11,59 @@ import { Button } from '@/components/ui/button'
 import { usePushAccount } from '@/hooks/use-push-account'
 
 const highlights = [
-  { label: 'Communities thriving', value: '2,400+' },
-  { label: 'Creators paid out', value: '$1.8M' },
-  { label: 'Average NPS', value: '72' }
+  { label: 'Chains Supported', value: '15+' },
+  { label: 'Cross-Chain Members', value: '12K+' },
+  { label: 'Universal Payments', value: '$2.1M' }
 ]
 
 const features = [
   {
-    title: 'Memberships on autopilot',
+    title: 'Universal Access',
     description:
-      'Recurring Push Chain-native billing, instant membership sync, and owner controls keep every cohort in lockstep.'
+      'Deploy once on Push Chain. Reach learners across Ethereum, Solana, Base, and 15+ other chains—without bridges or relayers.'
   },
   {
-    title: 'All-in-one classrooms',
+    title: 'Any Wallet, Any Token',
     description:
-      'Publish modular courses, track completions, and drip lessons without juggling multiple logins or exports.'
+      'Members join with their favorite wallet and pay with any token. No forced chain switching or gas juggling.'
   },
   {
-    title: 'Marketplace ready',
+    title: 'Shared-State Learning',
     description:
-      'List, resell, or bundle access with universal wallet verification and cooldown rules that protect your value.'
+      'Courses, memberships, and credentials stay in sync across all chains with Push Chain\'s shared-state architecture.'
   }
 ]
 
 const steps = [
   {
-    title: 'Launch in minutes',
+    title: 'Deploy Universally',
     detail:
-      'Name your community, set a price, and onboard your first members. PushCampus handles wallet auth and payouts.'
+      'Create your learning community once on Push Chain. Instantly accessible to users on Ethereum, Solana, Base, and every major chain.'
   },
   {
-    title: 'Engage every day',
+    title: 'Engage Everywhere',
     detail:
-      'Share updates, host discussions, and deliver lessons from a single dashboard designed for fast moderation.'
+      'Members interact from their native chain. No bridging, no switching, no friction. Universal wallet support makes it seamless.'
   },
   {
-    title: 'Grow sustainably',
+    title: 'Grow Borderlessly',
     detail:
-      'Track retention, surface upsells, and invite collaborators with transparent revenue splits powered by Push Chain.'
+      'Scale across the entire blockchain ecosystem without deploying multiple times or managing cross-chain complexity.'
   }
 ]
 
 const testimonials = [
   {
     name: 'Taylor Morgan',
-    role: 'Founder, Creator Commons',
+    role: 'Founder, Cross-Chain Academy',
     quote:
-      '“PushCampus combines community, content, and payments in a way my team actually enjoys using. Members stay longer and upgrades happen automatically.”'
+      '"PushCampus opened our courses to learners across every chain. Members join from Ethereum, Solana, or Base—using their favorite wallet. No bridges, no friction."'
   },
   {
     name: 'Avery Chen',
-    role: 'Lead Instructor, Push Chain Studio',
+    role: 'Lead Instructor, Universal Web3',
     quote:
-      '“Publishing courses and running live cohorts in one stack finally feels modern. The Push Chain rails make payouts instant—no spreadsheets required.”'
+      '"Deploy once, reach everywhere. Our students pay with any token and access courses from any chain. Push Chain\'s shared-state makes it all seamless."'
   }
 ]
 
@@ -80,36 +80,46 @@ export default function HomePage() {
 
   return (
     <main className='relative overflow-hidden'>
-      <div
-        className='pointer-events-none absolute inset-x-0 top-[-12rem] h-[32rem] bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_65%)] sm:top-[-18rem]'
-        aria-hidden='true'
-      />
+      {/* Enhanced background with logo blue gradients */}
+      <div className='pointer-events-none absolute inset-0' aria-hidden='true'>
+        <div className='absolute inset-x-0 top-[-12rem] h-[40rem] bg-[radial-gradient(circle_at_top,_hsl(var(--brand-blue)/0.15),_transparent_50%)] sm:top-[-18rem]' />
+        <div className='absolute right-0 top-[20rem] h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue-light)/0.12),_transparent_65%)] blur-3xl' />
+        <div className='absolute left-0 top-[50rem] h-[35rem] w-[35rem] rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue)/0.1),_transparent_70%)] blur-3xl' />
+      </div>
 
-      <div className='mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col gap-24 px-6 pb-24 pt-20 sm:pt-28'>
+      <div className='relative mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col gap-24 px-6 pb-24 pt-20 sm:pt-28'>
         <section className='grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center'>
           <div className='space-y-8'>
-            <span className='inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-4 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground shadow-sm backdrop-blur'>
+            <span className='inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-primary shadow-sm backdrop-blur-md'>
               <Sparkles className='h-3.5 w-3.5 text-primary' aria-hidden='true' />
-              Build the community you always imagined
+              Universal Learning Across Every Chain
             </span>
             <div className='space-y-6'>
               <h1 className='text-balance text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl'>
-                The modern home for your paid community and courses
+                <span className='bg-gradient-to-r from-foreground via-brand-blue-dark to-brand-blue bg-clip-text text-transparent'>
+                  Deploy Once.
+                </span>{' '}
+                <span className='bg-gradient-to-r from-brand-blue to-brand-blue-light bg-clip-text text-transparent'>
+                  Reach Everywhere.
+                </span>
               </h1>
-              <p className='max-w-xl text-lg text-muted-foreground'>
-                PushCampus delivers a modern, unified workflow with onchain ownership. Accept PC or stablecoins on Push
-                Chain, deliver premium classrooms, and grow memberships without duct-taped tools.
+              <p className='max-w-xl text-lg leading-relaxed text-muted-foreground'>
+                The first universal learning platform built on Push Chain. Create communities and courses that reach learners across{' '}
+                <span className='font-semibold text-foreground'>Ethereum, Solana, Base, and 15+ chains</span>—with{' '}
+                <span className='font-semibold text-primary'>any wallet</span>,{' '}
+                <span className='font-semibold text-accent'>any token</span>, and{' '}
+                <span className='font-semibold text-primary'>no network switching</span>.
               </p>
             </div>
             <div className='flex flex-col items-start gap-3 sm:flex-row sm:items-center'>
-              <Button size='lg' asChild>
+              <Button size='lg' className='bg-gradient-to-r from-brand-blue to-brand-blue-light hover:opacity-90' asChild>
                 <Link href='/create'>
-                  Launch a community
+                  Create Universal App
                   <ArrowRight className='ml-2 h-4 w-4' aria-hidden='true' />
                 </Link>
               </Button>
-              <Button size='lg' variant='ghost' asChild>
-                <Link href='/groups'>Explore your communities</Link>
+              <Button size='lg' variant='ghost' className='border-primary/30 hover:border-primary/50 hover:bg-primary/5' asChild>
+                <Link href='/groups'>Explore Communities</Link>
               </Button>
             </div>
             <dl className='grid gap-6 sm:grid-cols-3'>
@@ -123,35 +133,38 @@ export default function HomePage() {
           </div>
 
           <div className='relative'>
-            <div className='absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl' />
-            <div className='relative rounded-3xl border border-border/80 bg-card/90 p-6 shadow-2xl backdrop-blur'>
+            <div className='absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-blue/20 via-brand-blue-light/15 to-transparent blur-3xl' />
+            <div className='relative rounded-3xl border border-primary/20 bg-card/80 p-6 shadow-2xl shadow-primary/5 backdrop-blur-xl'>
               <div className='flex items-center justify-between'>
                 <div>
-                  <p className='text-xs uppercase tracking-wide text-muted-foreground'>Revenue this month</p>
-                  <p className='text-3xl font-semibold text-foreground'>$82,460</p>
+                  <p className='text-xs uppercase tracking-wide text-muted-foreground'>Cross-Chain Revenue</p>
+                  <p className='text-3xl font-semibold bg-gradient-to-r from-brand-blue to-brand-blue-light bg-clip-text text-transparent'>$142,860</p>
                 </div>
-                <span className='inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary'>
-                  +18% vs last month
+                <span className='inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-medium text-primary backdrop-blur-sm'>
+                  +34% vs last month
                 </span>
               </div>
               <div className='mt-8 space-y-5'>
                 {[
-                  { title: 'Active members', value: '1,204', trend: '+96' },
-                  { title: 'Renewals processed', value: '312', trend: '+12%' },
-                  { title: 'Courses completed', value: '486', trend: '+53' }
+                  { title: 'Universal members', value: '3,204', trend: 'From 15+ chains', icon: '🌐' },
+                  { title: 'Cross-chain payments', value: '1,847', trend: 'Any wallet, any token', icon: '💰' },
+                  { title: 'Courses delivered', value: '892', trend: 'Zero friction', icon: '🎓' }
                 ].map(metric => (
-                  <div key={metric.title} className='flex items-center justify-between rounded-xl border border-border/60 bg-background/80 px-4 py-3 shadow-sm'>
-                    <div>
-                      <p className='text-sm font-medium text-foreground'>{metric.title}</p>
-                      <p className='text-xs text-muted-foreground'>{metric.trend} this week</p>
+                  <div key={metric.title} className='group flex items-center justify-between rounded-xl border border-border/40 bg-background/60 px-4 py-3 shadow-sm backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-primary/5'>
+                    <div className='flex items-center gap-3'>
+                      <span className='text-xl'>{metric.icon}</span>
+                      <div>
+                        <p className='text-sm font-medium text-foreground'>{metric.title}</p>
+                        <p className='text-xs text-muted-foreground'>{metric.trend}</p>
+                      </div>
                     </div>
                     <p className='text-lg font-semibold text-foreground'>{metric.value}</p>
                   </div>
                 ))}
               </div>
-              <div className='mt-8 flex items-center gap-3 rounded-2xl border border-border/60 bg-background/80 px-4 py-3 text-sm text-muted-foreground'>
+              <div className='mt-8 flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground/90 backdrop-blur-sm'>
                 <ShieldCheck className='h-5 w-5 text-primary' aria-hidden='true' />
-                <span>Push Chain payments settle instantly to your treasury wallet.</span>
+                <span>Powered by Push Chain's shared-state L1. No bridges. No relayers. Just universal access.</span>
               </div>
             </div>
           </div>
@@ -159,44 +172,49 @@ export default function HomePage() {
 
         <section className='space-y-12'>
           <div className='space-y-4 text-center'>
-            <p className='text-xs font-medium uppercase tracking-wide text-primary'>Why creators choose PushCampus</p>
+            <p className='text-xs font-medium uppercase tracking-wide bg-gradient-to-r from-brand-blue-dark to-brand-blue-light bg-clip-text text-transparent'>
+              Why Build on Push Chain
+            </p>
             <h2 className='text-3xl font-semibold text-foreground sm:text-4xl'>
-              Everything you need to run a thriving membership
+              Universal Apps That Reach Every Chain
             </h2>
             <p className='mx-auto max-w-2xl text-base text-muted-foreground'>
-              Combine vibrant discussions, structured learning, and recurring revenue in one elegant hub branded as
-              your own.
+              Deploy once on Push Chain and instantly reach users across Ethereum, Solana, Base, and 15+ chains. No bridges. No relayers. No friction.
             </p>
           </div>
           <div className='grid gap-6 md:grid-cols-3'>
-            {features.map(feature => (
+            {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className='h-full rounded-3xl border border-border/70 bg-gradient-to-br from-background/95 via-background/70 to-background/95 p-8 text-left shadow-lg'
+                className='group h-full rounded-3xl border border-border/40 bg-gradient-to-br from-background/90 via-background/70 to-background/90 p-8 text-left shadow-lg backdrop-blur-sm transition-all hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10'
               >
-                <h3 className='text-xl font-semibold text-foreground'>{feature.title}</h3>
-                <p className='mt-3 text-sm text-muted-foreground'>{feature.description}</p>
+                <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 border border-primary/20 transition-all group-hover:scale-110 group-hover:border-primary/30'>
+                  <span className='text-2xl'>
+                    {index === 0 ? '🌐' : index === 1 ? '💎' : '🔗'}
+                  </span>
+                </div>
+                <h3 className='text-xl font-semibold text-foreground group-hover:text-primary transition-colors'>{feature.title}</h3>
+                <p className='mt-3 text-sm leading-relaxed text-muted-foreground'>{feature.description}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className='grid gap-10 rounded-3xl border border-border/70 bg-card/90 p-10 shadow-xl backdrop-blur-md lg:grid-cols-[1fr_1.1fr]'>
+        <section className='grid gap-10 rounded-3xl border border-primary/20 bg-card/80 p-10 shadow-xl shadow-primary/5 backdrop-blur-xl lg:grid-cols-[1fr_1.1fr]'>
           <div className='space-y-4'>
             <h2 className='text-3xl font-semibold text-foreground'>How it works</h2>
             <p className='text-base text-muted-foreground'>
-              We rebuilt the community stack from the ground up so you can deliver premium experiences without
-              compromising ownership or speed.
+              Built on Push Chain's shared-state L1, PushCampus eliminates blockchain fragmentation so you can reach learners everywhere—without compromise.
             </p>
             <div className='mt-8 space-y-6'>
               {steps.map((step, index) => (
                 <div key={step.title} className='flex items-start gap-4'>
-                  <span className='flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary'>
+                  <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/15 to-accent/15 border border-primary/30 text-sm font-semibold text-primary backdrop-blur-sm'>
                     {index + 1}
                   </span>
                   <div>
                     <h3 className='text-lg font-medium text-foreground'>{step.title}</h3>
-                    <p className='mt-1 text-sm text-muted-foreground'>{step.detail}</p>
+                    <p className='mt-1 text-sm leading-relaxed text-muted-foreground'>{step.detail}</p>
                   </div>
                 </div>
               ))}
@@ -204,41 +222,50 @@ export default function HomePage() {
           </div>
 
           <div className='grid gap-6 lg:grid-cols-2'>
-            {testimonials.map(testimonial => (
+            {testimonials.map((testimonial, index) => (
               <figure
                 key={testimonial.name}
-                className='flex h-full flex-col justify-between rounded-3xl border border-border/60 bg-background/80 p-6 shadow-md'
+                className='group flex h-full flex-col justify-between rounded-3xl border border-border/40 bg-background/70 p-6 shadow-md backdrop-blur-sm transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5'
               >
-                <blockquote className='text-sm text-muted-foreground'>{testimonial.quote}</blockquote>
-                <figcaption className='mt-6'>
-                  <p className='text-sm font-semibold text-foreground'>{testimonial.name}</p>
-                  <p className='text-xs text-muted-foreground'>{testimonial.role}</p>
+                <blockquote className='text-sm leading-relaxed text-muted-foreground'>{testimonial.quote}</blockquote>
+                <figcaption className='mt-6 flex items-center gap-3'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/15 to-accent/15 border border-primary/20 text-sm font-semibold text-primary'>
+                    {testimonial.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div>
+                    <p className='text-sm font-semibold text-foreground'>{testimonial.name}</p>
+                    <p className='text-xs text-muted-foreground'>{testimonial.role}</p>
+                  </div>
                 </figcaption>
               </figure>
             ))}
           </div>
         </section>
 
-        <section className='space-y-6 rounded-3xl border border-border/70 bg-card/90 p-10 shadow-xl backdrop-blur-md'>
-          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+        <section className='relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-card/90 via-card/80 to-card/70 p-10 shadow-xl shadow-primary/5 backdrop-blur-xl'>
+          <div className='pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-gradient-to-br from-brand-blue/20 to-brand-blue-light/15 blur-3xl' />
+          <div className='pointer-events-none absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-gradient-to-br from-brand-blue-light/15 to-brand-blue/10 blur-3xl' />
+
+          <div className='relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
             <div className='space-y-2'>
-              <h2 className='text-3xl font-semibold text-foreground sm:text-4xl'>Ready to see your communities?</h2>
+              <h2 className='text-3xl font-semibold text-foreground sm:text-4xl'>
+                Ready to go universal?
+              </h2>
               <p className='max-w-xl text-sm text-muted-foreground'>
-                Browse every group you own or participate in, manage memberships, and jump into the conversation from a
-                dedicated overview page.
+                Join the future of Web3 education. Deploy once on Push Chain and reach learners across every blockchain—with any wallet, any token, and zero friction.
               </p>
             </div>
             <div className='flex flex-col gap-3 sm:flex-row'>
-              <Button asChild>
-                <Link href='/groups'>
-                  View your groups
-                  <ArrowRight className='ml-2 h-4 w-4' aria-hidden='true' />
+              <Button className='bg-gradient-to-r from-brand-blue to-brand-blue-light hover:opacity-90 shadow-lg shadow-primary/20' asChild>
+                <Link href='/create'>
+                  Create Universal App
+                  <Sparkles className='ml-2 h-4 w-4' aria-hidden='true' />
                 </Link>
               </Button>
-              <Button asChild variant='outline'>
-                <Link href='/create'>
-                  Create a group
-                  <Sparkles className='ml-2 h-4 w-4' aria-hidden='true' />
+              <Button className='border-primary/30 hover:border-primary/50 hover:bg-primary/5' asChild variant='outline'>
+                <Link href='/groups'>
+                  Explore Communities
+                  <ArrowRight className='ml-2 h-4 w-4' aria-hidden='true' />
                 </Link>
               </Button>
             </div>
