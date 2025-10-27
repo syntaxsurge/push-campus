@@ -78,7 +78,7 @@ function ThemeAwarePushWalletProvider({
     return {
       title: 'PushCampus',
       description: 'Learning communities powered by Universal Wallet connectivity.',
-      logoUrl: '/images/skillvesta-logo.png'
+      logoUrl: '/images/push-campus-logo.png'
     }
   }, [])
 

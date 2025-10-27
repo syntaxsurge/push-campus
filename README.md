@@ -64,33 +64,6 @@ cd push-campus
 pnpm install
 ```
 
-## Environment Variables
-
-Create `.env.local` in the project root. The app reads the following keys:
-
-```env
-# Convex
-NEXT_PUBLIC_CONVEX_URL="https://<your-convex-deployment>.convex.cloud"
-
-# Push Chain configuration
-NEXT_PUBLIC_PUSH_CHAIN_ID="42101"
-NEXT_PUBLIC_PUSH_RPC_URLS="https://evm.rpc-testnet-donut-node1.push.org,https://evm.rpc-testnet-donut-node2.push.org"
-NEXT_PUBLIC_PUSH_BLOCK_EXPLORER_URL="https://donut.push.network"
-
-# Native token & contracts
-NEXT_PUBLIC_PLATFORM_TREASURY_ADDRESS="0xYourTreasuryWallet"
-NEXT_PUBLIC_NATIVE_TOKEN_SYMBOL="PC"
-NEXT_PUBLIC_SUBSCRIPTION_PRICE_NATIVE="99"
-NEXT_PUBLIC_MEMBERSHIP_CONTRACT_ADDRESS="0xYourMembershipPass1155"
-NEXT_PUBLIC_BADGE_CONTRACT_ADDRESS="0xYourBadge1155"
-NEXT_PUBLIC_REGISTRAR_CONTRACT_ADDRESS="0xYourRegistrar"
-
-# Optional marketplace (enable listing/renew flows)
-NEXT_PUBLIC_MARKETPLACE_CONTRACT_ADDRESS="0xYourMembershipMarketplace"
-```
-
-If you have not initialised Convex locally, run `pnpm convex:dev` once so `convex/` can talk to your deployment and regenerate `_generated/` types.
-
 ## Testnet Funding
 
 For end-to-end testing on Push Chain Donut:

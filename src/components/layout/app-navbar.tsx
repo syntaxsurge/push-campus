@@ -1,10 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { GroupSwitcher } from './group-switcher'
-import { Logo } from './logo'
 import { WalletMenu } from './wallet-menu'
 import { ThemeToggle } from './theme-toggle'
 
@@ -17,8 +17,16 @@ export function AppNavbar() {
     <header className='sticky top-0 z-40 border-b border-border bg-card'>
       <div className='mx-auto flex h-16 w-full items-center justify-between gap-6 px-6'>
         <div className='flex items-center gap-6'>
-          <Link href='/' className='hidden sm:block'>
-            <Logo className='text-xl' />
+          <Link href='/' className='hidden items-center sm:flex'>
+            <Image
+              src='/images/push-campus-logo.png'
+              alt='PushCampus'
+              width={292}
+              height={293}
+              priority
+              className='h-10 w-auto'
+            />
+            <span className='sr-only'>PushCampus</span>
           </Link>
           <GroupSwitcher />
           <nav className='flex items-center gap-2'>
