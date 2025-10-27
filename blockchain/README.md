@@ -1,0 +1,95 @@
+# PushCampus Blockchain Workspace
+
+This folder is a stand-alone Hardhat project that contains the smart contracts powering PushCampus’s on-chain course marketplace on Push Chain.
+
+## Contract Suite
+
+| Contract                      | Purpose                                                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `MembershipPass1155.sol`      | Native-token-gated ERC-1155 passes (tokenId per course). Handles expirations, cooldowns, and marketplace-only transfers.    |
+| `helpers/SplitPayout.sol`     | Pull-based native-token splitter deployed per course. Registrar mints fresh instances and collaborators withdraw on demand. |
+| `Badge1155.sol`               | Soulbound completion badges (non-transferable ERC-1155).                                                             |
+| `Registrar.sol`               | Deploys a `SplitPayout` and registers a course in one call.                                                          |
+| `MembershipMarketplace.sol`   | Primary + secondary marketplace enforcing platform fees, cooldowns, and renewals.                                   |
+| `RevenueSplitRouter.sol`      | Basis-point splitter used during join purchases to fan out native PC to owners and administrators immediately.           |
+
+## Getting Started
+
+1. Install dependencies and scaffold an env file
+
+   ```bash
+   cd blockchain
+   pnpm install
+   cp .env.example .env
+   ```
+
+2. Populate `.env` using the reference below. The deployment scripts will refuse
+   to run when a required value is missing, so fill in the basics before
+   invoking Hardhat.
+
+### Environment Variables
+
+| Key                                       | Purpose                                                                                             | When to provide it                         |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `PRIVATE_KEY`                             | Deployer/admin wallet used for all scripts.                                                         | **Before** first deployment                |
+| `PUSH_DONUT_RPC_URL`                      | RPC endpoint for Push Chain Donut.                                                                  | **Before** first deployment                |
+| `PUSHSCAN_API_KEY`                        | Optional – enables `hardhat verify` once Push Scan exposes verification APIs.                       | Optional                                   |
+| `MEMBERSHIP_METADATA_URI`                 | Base URI for membership token metadata.                                                             | Before deployment (or leave blank to skip) |
+| `BADGE_METADATA_URI`                      | Base URI for badge metadata.                                                                        | Before deployment (or leave blank to skip) |
+| `MARKETPLACE_TREASURY_ADDRESS`            | Wallet that should receive marketplace fees.                                                        | **Before** marketplace deployment          |
+| `MARKETPLACE_FEE_BPS`                     | Platform fee in basis points (defaults to `250` → 2.5%).                                            | Optional                                   |
+| `MARKETPLACE_MAX_LISTING_DURATION_SECONDS`| Max duration for secondary listings (defaults to 7 days).                                           | Optional                                   |
+| `MEMBERSHIP_CONTRACT_ADDRESS`             | Address of an already deployed `MembershipPass1155`. Enables scripts to attach instead of redeploy. | **After** first deployment                 |
+| `BADGE_CONTRACT_ADDRESS`                  | Address of an already deployed `Badge1155`.                                                         | **After** first deployment                 |
+| `REGISTRAR_CONTRACT_ADDRESS`              | Address of an already deployed `Registrar`.                                                         | **After** first deployment                 |
+| `MARKETPLACE_CONTRACT_ADDRESS`            | Address of an already deployed `MembershipMarketplace`.                                             | **After** first deployment                 |
+| `REVENUE_SPLIT_ROUTER_ADDRESS`            | Address of an already deployed `RevenueSplitRouter`.                                                | **After** first deployment                 |
+
+After you deploy each contract, paste its address back into `.env`. The deploy
+scripts check these fields so they can skip redeploying and instead attach to
+the existing instance (necessary for tasks such as granting roles or updating
+pricing). Keeping this information in `blockchain/.env` prevents accidental
+redeployments and keeps the Hardhat tooling in sync with production.
+
+Helper contracts that are instantiated per course live under `contracts/helpers/` (for example, `helpers/SplitPayout.sol`), highlighting that they are deployed by `Registrar` on demand. Environment-wide utilities such as `RevenueSplitRouter.sol` remain at the top level because you deploy them once and wire the resulting address into `.env` and the frontend (`NEXT_PUBLIC_REVENUE_SPLIT_ROUTER_ADDRESS`).
+
+## Typical Commands
+
+```bash
+npx hardhat compile
+npx hardhat run scripts/deployMembershipPass.ts --network pushDonut
+npx hardhat run scripts/deployRegistrar.ts --network pushDonut
+npx hardhat run scripts/deployMarketplace.ts --network pushDonut
+npx hardhat run scripts/deployBadge1155.ts --network pushDonut
+npx hardhat run scripts/deployRevenueSplitRouter.ts --network pushDonut
+```
+
+Compiling generates ABIs under `artifacts/` and TypeScript types under `typechain-types/`.
+
+## Deployment Cheatsheet
+
+1. **Deploy `MembershipPass1155`** (`deployMembershipPass.ts`).
+   - Uses metadata URI and the admin wallet.
+   - Copy the emitted address into `MEMBERSHIP_CONTRACT_ADDRESS`.
+2. **Deploy `Badge1155`** (`deployBadge1155.ts`).
+   - Copy its address into `BADGE_CONTRACT_ADDRESS`.
+3. **Deploy `Registrar`** (`deployRegistrar.ts`).
+   - Script expects the membership address in `.env` and grants `REGISTRAR_ROLE`.
+   - Copy the new address into `REGISTRAR_CONTRACT_ADDRESS`.
+4. **Deploy `MembershipMarketplace`** (`deployMarketplace.ts`).
+   - Requires the membership address and `MARKETPLACE_TREASURY_ADDRESS`.
+   - Script grants `MARKETPLACE_ROLE`; note the resulting address for the web app.
+5. **Deploy `RevenueSplitRouter`** (`deployRevenueSplitRouter.ts`).
+   - Stateless helper used for group join revenue splits. Deploy once per environment.
+   - Script records both `REVENUE_SPLIT_ROUTER_ADDRESS` and `NEXT_PUBLIC_REVENUE_SPLIT_ROUTER_ADDRESS` so the app can call it.
+6. Mirror the same addresses into the frontend (`NEXT_PUBLIC_*`, including
+   `NEXT_PUBLIC_MARKETPLACE_CONTRACT_ADDRESS`) so the app talks to the correct contracts.
+
+Whenever a creator registers a course the dApp calls the Registrar which deploys a `SplitPayout` and wires the course configuration.
+
+> **Re-running scripts:** With the addresses stored in `.env`, rerunning a
+> deployment script detects that the contract already exists and reattaches,
+> letting you perform admin tasks (e.g. fee updates, role grants) without
+> redeploying.
+
+Happy building on Push Chain!
