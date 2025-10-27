@@ -18,7 +18,7 @@ async function main() {
   const address = await contract.getAddress();
   console.log(`✅ Badge1155 deployed at ${address}`);
 
-  updateEnvLog("NEXT_PUBLIC_BADGE_CONTRACT_ADDRESS", address);
+  updateEnvLog("BADGE_CONTRACT_ADDRESS", address);
 
   if (shouldVerifyNetwork(network.name)) {
     try {

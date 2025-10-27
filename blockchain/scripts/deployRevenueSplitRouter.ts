@@ -16,7 +16,6 @@ async function main() {
   console.log(`✅ RevenueSplitRouter deployed at ${address}`);
 
   updateEnvLog("REVENUE_SPLIT_ROUTER_ADDRESS", address);
-  updateEnvLog("NEXT_PUBLIC_REVENUE_SPLIT_ROUTER_ADDRESS", address);
 
   if (shouldVerifyNetwork(network.name)) {
     try {

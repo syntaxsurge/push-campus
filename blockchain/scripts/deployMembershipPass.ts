@@ -18,7 +18,7 @@ async function main() {
   const address = await contract.getAddress();
   console.log(`✅ MembershipPass1155 deployed at ${address}`);
 
-  updateEnvLog("NEXT_PUBLIC_MEMBERSHIP_CONTRACT_ADDRESS", address);
+  updateEnvLog("MEMBERSHIP_CONTRACT_ADDRESS", address);
 
   if (shouldVerifyNetwork(network.name)) {
     try {

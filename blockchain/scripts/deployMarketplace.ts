@@ -15,7 +15,9 @@ async function main() {
   const { ethers, network } = hre;
 
   if (!existingMembershipAddress) {
-    throw new Error("MEMBERSHIP_CONTRACT_ADDRESS env var is required before deploying the marketplace");
+    throw new Error(
+      "Membership contract address not found. Populate MEMBERSHIP_CONTRACT_ADDRESS in blockchain/.env (deploy the pass first) before running this script."
+    );
   }
 
   console.log(`\n🚀 Deploying MembershipMarketplace to '${network.name}'…`);
@@ -38,7 +40,7 @@ async function main() {
   const address = await contract.getAddress();
   console.log(`✅ MembershipMarketplace deployed at ${address}`);
 
-  updateEnvLog("NEXT_PUBLIC_MARKETPLACE_CONTRACT_ADDRESS", address);
+  updateEnvLog("MARKETPLACE_CONTRACT_ADDRESS", address);
 
   const membership = await ethers.getContractAt("MembershipPass1155", existingMembershipAddress);
   const marketplaceRole = await membership.MARKETPLACE_ROLE();

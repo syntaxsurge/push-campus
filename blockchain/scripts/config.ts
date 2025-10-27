@@ -80,15 +80,14 @@ if (!adminAddress) {
 
 export const membershipURI = env.MEMBERSHIP_METADATA_URI;
 export const badgeURI = env.BADGE_METADATA_URI;
+
 export const existingMembershipAddress = env.MEMBERSHIP_CONTRACT_ADDRESS
   ? normalise(env.MEMBERSHIP_CONTRACT_ADDRESS)
   : "";
 
-export const existingRegistrarAddress = env.REGISTRAR_ADDRESS
-  ? normalise(env.REGISTRAR_ADDRESS)
-  : env.NEXT_PUBLIC_REGISTRAR_CONTRACT_ADDRESS
-    ? normalise(env.NEXT_PUBLIC_REGISTRAR_CONTRACT_ADDRESS)
-    : "";
+export const existingRegistrarAddress = env.REGISTRAR_CONTRACT_ADDRESS
+  ? normalise(env.REGISTRAR_CONTRACT_ADDRESS)
+  : "";
 
 export const membershipDurationSeconds = parseUintEnv("MEMBERSHIP_DURATION_SECONDS", 60 * 60 * 24 * 30); // 30 days
 export const membershipTransferCooldownSeconds = parseUintEnv(

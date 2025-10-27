@@ -103,26 +103,29 @@ Compile with `cd blockchain && pnpm install && npx hardhat compile`. The `script
 PRIVATE_KEY="0xYourPrivateKey"
 PUSH_DONUT_RPC_URL="https://evm.rpc-testnet-donut-node1.push.org/"
 PUSHSCAN_API_KEY="<optional if Push Scan exposes verification API>"
-MEMBERSHIP_CONTRACT_ADDRESS="0x..." # optional – reuse existing deployments
-BADGE_CONTRACT_ADDRESS="0x..."
-REGISTRAR_CONTRACT_ADDRESS="0x..."
-MARKETPLACE_CONTRACT_ADDRESS="0x..."
+MARKETPLACE_TREASURY_ADDRESS="0xYourTreasuryWallet"
+MEMBERSHIP_METADATA_URI=""
+BADGE_METADATA_URI=""
+MEMBERSHIP_CONTRACT_ADDRESS=""
+REGISTRAR_CONTRACT_ADDRESS=""
+MARKETPLACE_FEE_BPS=250
+MARKETPLACE_MAX_LISTING_DURATION_SECONDS=604800
 ```
 
 Deployment order when bootstrapping a new environment:
 
 1. `deployMembershipPass.ts` – deploys `MembershipPass1155`
 2. `deployBadge1155.ts` – deploys `Badge1155`
-3. `deployRegistrar.ts` – deploys `Registrar` and wires it to the membership contract
-4. `deployMarketplace.ts` – deploys `MembershipMarketplace` and grants marketplace roles
+3. `deployRegistrar.ts` – deploys `Registrar`, grants the role on `MembershipPass1155`, and records the address
+4. `deployMarketplace.ts` – deploys `MembershipMarketplace`, grants marketplace roles, and records the address
 5. (Optional) `deployRevenueSplitRouter.ts` – deploys router used for multi-party payouts
 
-Each script prints the freshly deployed address. Copy those addresses into `blockchain/.env` so the workspace can attach to existing instances instead of redeploying. Mirror the same values into the web app’s `.env.local` under the `NEXT_PUBLIC_*` keys so the frontend points at the deployed contracts.
+Each script prints the freshly deployed address—capture any required ones in `blockchain/.env` using the non-public keys above, then mirror them into the web app’s `.env.local` as `NEXT_PUBLIC_*` when the frontend needs access.
 
 ## Notes & Next Steps
 
 - Learners need PC for membership payments and gas; consider adding a paymaster later if needed.
-- Grant the Registrar contract the `REGISTRAR_ROLE` in `MembershipPass1155` after deployment so it can register courses.
+- Ensure `MEMBERSHIP_CONTRACT_ADDRESS` (and `REGISTRAR_CONTRACT_ADDRESS` when applicable) are present before deploying dependent scripts.
 - When shipping beyond Donut, double-check all on-chain addresses and RPC URLs in `.env.local`.
 
 Happy building on Push Chain!

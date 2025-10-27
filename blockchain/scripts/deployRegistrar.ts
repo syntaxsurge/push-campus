@@ -8,7 +8,9 @@ async function main() {
   const { ethers, network } = hre;
 
   if (!existingMembershipAddress) {
-    throw new Error("MEMBERSHIP_CONTRACT_ADDRESS env var is required to deploy the Registrar");
+    throw new Error(
+      "Membership contract address not found. Populate MEMBERSHIP_CONTRACT_ADDRESS in blockchain/.env (deploy the pass first) before running this script."
+    );
   }
 
   console.log(`\n🚀 Deploying Registrar to '${network.name}'…`);
@@ -22,7 +24,7 @@ async function main() {
   const address = await contract.getAddress();
   console.log(`✅ Registrar deployed at ${address}`);
 
-  updateEnvLog("NEXT_PUBLIC_REGISTRAR_CONTRACT_ADDRESS", address);
+  updateEnvLog("REGISTRAR_CONTRACT_ADDRESS", address);
 
   const membership = await ethers.getContractAt("MembershipPass1155", existingMembershipAddress);
   const registrarRole = await membership.REGISTRAR_ROLE();
