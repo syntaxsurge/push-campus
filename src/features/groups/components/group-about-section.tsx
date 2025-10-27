@@ -38,7 +38,16 @@ type CourseVerificationState =
   | { status: 'error'; message: string }
 
 export function GroupAboutSection() {
-  const { group, owner, isOwner, memberCount, membership, currentUser, administrators } = useGroupContext()
+  const {
+    group,
+    owner,
+    isOwner,
+    memberCount,
+    membership,
+    currentUser,
+    administrators,
+    subscription
+  } = useGroupContext()
   const { address, pushChainClient } = usePushAccount()
   const publicClient = useMemo(() => getPushPublicClient(), [])
   const membershipAddress = useMemo(() => {
@@ -242,16 +251,13 @@ export function GroupAboutSection() {
   }, [totalMembers])
 
   const explorerBaseUrl = PUSH_BLOCK_EXPLORER_URL
-  const tokenLink =
-    membershipAddress && membershipCourseId
-      ? `${explorerBaseUrl}/token/${membershipAddress}?a=${membershipCourseId.toString()}`
-      : null
+  const transactionHash = subscription.lastPaymentTxHash?.trim()
   const membershipCourseIdLabel = membershipCourseId ? membershipCourseId.toString() : 'Not assigned'
   const explorerName = 'Push Scan'
   const explorerUrl = useMemo(() => {
-    if (!membershipCourseId || !membershipAddress) return null
-    return `${explorerBaseUrl}/token/${membershipAddress}?a=${membershipCourseId.toString()}`
-  }, [explorerBaseUrl, membershipAddress, membershipCourseId])
+    if (!transactionHash) return null
+    return `${explorerBaseUrl}/tx/${transactionHash}`
+  }, [explorerBaseUrl, transactionHash])
   const verificationNode = useMemo(() => {
     switch (courseVerification.status) {
       case 'checking':
@@ -273,7 +279,7 @@ export function GroupAboutSection() {
                 rel='noopener noreferrer'
                 className='inline-flex items-center gap-1 font-medium underline decoration-dotted underline-offset-4'
               >
-                View on {explorerName}
+                View transaction on {explorerName}
                 <ExternalLink className='h-3 w-3' />
               </a>
             ) : null}
