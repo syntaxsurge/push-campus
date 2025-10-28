@@ -15,7 +15,8 @@ import {
   GraduationCap,
   TrendingUp,
   CheckCircle2,
-  Star
+  Star,
+  Play
 } from 'lucide-react'
 
 import { api } from '@/convex/_generated/api'
@@ -277,6 +278,61 @@ export default function HomePage() {
                 </div>
               )
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Video Demo Section */}
+      <section className='relative py-24'>
+        <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+          <div className='mx-auto max-w-4xl'>
+            <div className='text-center mb-12'>
+              <div className='inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary backdrop-blur-sm mb-6'>
+                <Play className='h-4 w-4' />
+                <span>See It In Action</span>
+              </div>
+              <h2 className='text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4'>
+                Watch{' '}
+                <span className='bg-gradient-to-r from-brand-blue to-brand-blue-light bg-clip-text text-transparent'>
+                  PushCampus
+                </span>
+                {' '}in Action
+              </h2>
+              <p className='text-lg leading-relaxed text-muted-foreground'>
+                Discover how PushCampus makes cross-chain education effortless
+              </p>
+            </div>
+
+            {/* Video Container */}
+            <div className='group relative'>
+              {/* Decorative Blurs */}
+              <div className='pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-3xl opacity-50 transition-opacity group-hover:opacity-75' />
+
+              {/* Video Frame */}
+              <div className='relative overflow-hidden rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-card/95 via-card/90 to-card/85 p-2 backdrop-blur-xl shadow-2xl shadow-primary/20 transition-all group-hover:border-primary/50 group-hover:shadow-3xl group-hover:shadow-primary/30'>
+                <div className='relative aspect-video overflow-hidden rounded-2xl bg-black/5'>
+                  <iframe
+                    className='absolute inset-0 h-full w-full'
+                    src='https://www.youtube.com/embed/C_squUflvDs'
+                    title='PushCampus Demo'
+                    allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+
+              {/* Corner Accents */}
+              <div className='pointer-events-none absolute -top-2 -right-2 h-20 w-20 rounded-full bg-gradient-to-br from-accent/30 to-transparent blur-2xl' />
+              <div className='pointer-events-none absolute -bottom-2 -left-2 h-20 w-20 rounded-full bg-gradient-to-br from-primary/30 to-transparent blur-2xl' />
+            </div>
+
+            {/* Supporting Text */}
+            <div className='mt-8 text-center'>
+              <p className='text-sm text-muted-foreground'>
+                Learn how educators are building thriving communities across{' '}
+                <span className='font-semibold text-primary'>15+ blockchains</span>
+              </p>
+            </div>
           </div>
         </div>
       </section>
