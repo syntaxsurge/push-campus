@@ -34,7 +34,10 @@ export function GroupCard({
   className
 }: GroupCardProps) {
   const router = useAppRouter()
-  const { rate: pushUsdRate } = useTokenUsdRate('push-protocol', { autoFetch: true })
+  const { rate: pushUsdRate } = useTokenUsdRate('push-protocol', {
+    autoFetch: true,
+    fallbackRate: 1
+  })
   const memberLabel = memberCount === 1 ? 'member' : 'members'
 
   const handleNavigate = () => {

@@ -6,11 +6,11 @@ type CachedPrice = {
 }
 
 const priceCache = new Map<string, CachedPrice>()
-const inFlight = new Map<string, Promise<number>>()
+const inFlight = new Map<string, Promise<number | null>>()
 
 type CoingeckoResponse = Record<string, { usd?: number }>
 
-async function requestPrice(id: string) {
+async function requestPrice(id: string): Promise<number | null> {
   const response = await fetch(
     `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(id)}&vs_currencies=usd`,
     {
@@ -26,8 +26,9 @@ async function requestPrice(id: string) {
 
   const data = (await response.json()) as CoingeckoResponse
   const price = data[id]?.usd
-  if (typeof price !== 'number' || !Number.isFinite(price)) {
-    throw new Error(`Invalid price payload for ${id}`)
+  if (typeof price !== 'number' || !Number.isFinite(price) || price <= 0) {
+    console.warn(`Coingecko returned invalid price for "${id}". Using fallback if provided.`)
+    return null
   }
 
   priceCache.set(id, {
@@ -46,7 +47,7 @@ export function getCachedCoingeckoUsdPrice(id: string) {
   return null
 }
 
-export async function getCoingeckoUsdPrice(id: string) {
+export async function getCoingeckoUsdPrice(id: string): Promise<number | null> {
   const cached = getCachedCoingeckoUsdPrice(id)
   if (cached !== null) {
     return cached
@@ -54,10 +55,15 @@ export async function getCoingeckoUsdPrice(id: string) {
 
   let pending = inFlight.get(id)
   if (!pending) {
-    pending = requestPrice(id).finally(() => {
-      inFlight.delete(id)
-    })
+    pending = requestPrice(id)
+      .catch(error => {
+        console.warn(`Failed to fetch price for "${id}"`, error)
+        return null
+      })
+      .finally(() => {
+        inFlight.delete(id)
+      })
     inFlight.set(id, pending)
   }
-  return pending
+  return pending!
 }

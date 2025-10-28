@@ -51,7 +51,8 @@ export function JoinGroupButton() {
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [pendingJoin, setPendingJoin] = useState<JoinPreparation | null>(null)
   const { rate: pushUsdRate, refresh: refreshPushUsdRate } = useTokenUsdRate('push-protocol', {
-    autoFetch: true
+    autoFetch: true,
+    fallbackRate: 1
   })
   const marketplaceAddress = MARKETPLACE_CONTRACT_ADDRESS as `0x${string}` | null
   const membershipAddress = MEMBERSHIP_CONTRACT_ADDRESS as `0x${string}` | null
@@ -334,11 +335,11 @@ export function JoinGroupButton() {
     group.price && group.price > 0 ? `Join ${priceLabel}` : 'Join for free'
   const isBusy = isPreparing || isFinalizing
   const usdPriceLabel = formatGroupPriceLabel(group.price, group.billingCadence, {
-    includeCadence: false,
+    includeCadence: true,
     usdRate: pushUsdRate ?? null
   })
   const nativePriceLabel = formatGroupPriceLabel(group.price, group.billingCadence, {
-    includeCadence: false
+    includeCadence: true
   })
 
   const handleCancelConfirmation = () => {

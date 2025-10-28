@@ -158,7 +158,7 @@ async function calculateAmountFromUsd({
   coingeckoId: string
 }) {
   const price = await getCoingeckoUsdPrice(coingeckoId)
-  if (price <= 0) {
+  if (!price || price <= 0) {
     throw new Error(`Price for ${coingeckoId} must be positive`)
   }
   const tokenAmount = (usd / price).toFixed(Math.min(decimals, 8))

@@ -50,7 +50,10 @@ export function GroupAboutSection() {
     subscription
   } = useGroupContext()
   const { address, pushChainClient } = usePushAccount()
-  const { rate: pushUsdRate } = useTokenUsdRate('push-protocol', { autoFetch: true })
+  const { rate: pushUsdRate } = useTokenUsdRate('push-protocol', {
+    autoFetch: true,
+    fallbackRate: 1
+  })
   const publicClient = useMemo(() => getPushPublicClient(), [])
   const membershipAddress = useMemo(() => {
     const value = MEMBERSHIP_CONTRACT_ADDRESS?.trim()
