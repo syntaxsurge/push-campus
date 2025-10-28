@@ -41,7 +41,7 @@ import {
   MembershipPassService,
   type MarketplaceListing
 } from '@/lib/onchain/services'
-import { SUBSCRIPTION_PRICE_NATIVE } from '@/lib/config'
+import { SUBSCRIPTION_PRICE_USD } from '@/lib/config'
 import { formatDurationShort, formatTimestampRelative } from '@/lib/time'
 import { formatNativeToken, parseNativeTokenAmount } from '@/lib/native-token'
 import { getPushPublicClient } from '@/lib/onchain/push-chain'
@@ -1109,7 +1109,7 @@ export function ListDialog({
   }) => Promise<void>
   eligibleCourses: MarketplaceCourse[]
 }) {
-  const [price, setPrice] = useState(SUBSCRIPTION_PRICE_NATIVE)
+  const [price, setPrice] = useState(SUBSCRIPTION_PRICE_USD)
   const [duration, setDuration] = useState<bigint>(DEFAULT_LISTING_DURATION)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<
@@ -1118,7 +1118,7 @@ export function ListDialog({
 
   useEffect(() => {
     if (state.open) {
-      setPrice(SUBSCRIPTION_PRICE_NATIVE)
+      setPrice(SUBSCRIPTION_PRICE_USD)
       setDuration(DEFAULT_LISTING_DURATION)
       const fallback = state.course ?? eligibleCourses[0]
       setSelectedCourse(fallback)

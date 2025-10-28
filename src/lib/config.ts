@@ -57,16 +57,23 @@ export const MARKETPLACE_CONTRACT_ADDRESS =
 export const REVENUE_SPLIT_ROUTER_ADDRESS =
   process.env.NEXT_PUBLIC_REVENUE_SPLIT_ROUTER_ADDRESS ?? ''
 
-export const SUBSCRIPTION_PRICE_NATIVE =
-  process.env.NEXT_PUBLIC_SUBSCRIPTION_PRICE_NATIVE ?? '99'
-
 export const SUBSCRIPTION_PRICE_USD =
   process.env.NEXT_PUBLIC_SUBSCRIPTION_PRICE_USD ?? '99'
 
-export const NATIVE_TOKEN_SYMBOL =
-  process.env.NEXT_PUBLIC_NATIVE_TOKEN_SYMBOL ?? 'PC'
+const PUSH_NATIVE_TOKEN_BY_CHAIN: Record<number, { symbol: string; decimals: number }> = {
+  42101: { symbol: 'PC', decimals: 18 },
+  9: { symbol: 'PC', decimals: 18 },
+  9001: { symbol: 'PC', decimals: 18 }
+}
 
-export const NATIVE_TOKEN_DECIMALS = 18
+const DEFAULT_NATIVE_TOKEN = { symbol: 'PC', decimals: 18 }
+
+const nativeTokenConfig =
+  PUSH_NATIVE_TOKEN_BY_CHAIN[PUSH_CHAIN_ID] ?? DEFAULT_NATIVE_TOKEN
+
+export const NATIVE_TOKEN_SYMBOL = nativeTokenConfig.symbol
+
+export const NATIVE_TOKEN_DECIMALS = nativeTokenConfig.decimals
 
 const DEFAULT_MEMBERSHIP_DURATION_SECONDS = 60 * 60 * 24 * 30
 const DEFAULT_MEMBERSHIP_TRANSFER_COOLDOWN_SECONDS = 60 * 60 * 24

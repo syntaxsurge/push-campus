@@ -1,6 +1,6 @@
 import { PushChain as PushChainSdk } from '@pushchain/core'
 
-import { PLATFORM_TREASURY_ADDRESS, SUBSCRIPTION_PRICE_NATIVE, SUBSCRIPTION_PRICE_USD } from '@/lib/config'
+import { PLATFORM_TREASURY_ADDRESS, SUBSCRIPTION_PRICE_USD } from '@/lib/config'
 import { parseNativeTokenAmount } from '@/lib/native-token'
 
 type MoveableToken = {
@@ -258,7 +258,7 @@ export async function resolvePlatformFeeQuote(options: {
       }
     }
   } catch (error) {
-    const fallbackAmount = parseNativeTokenAmount(SUBSCRIPTION_PRICE_NATIVE)
+    const fallbackAmount = parseNativeTokenAmount(SUBSCRIPTION_PRICE_USD)
     return {
       usdAmount,
       symbol: DEFAULT_PUSH_CONFIG.symbol,
