@@ -5,7 +5,11 @@ import { useApiMutation } from '@/hooks/use-api-mutation'
 import { PLATFORM_TREASURY_ADDRESS } from '@/lib/config'
 import { usePushAccount } from '@/hooks/use-push-account'
 import { useUniversalTransaction } from '@/hooks/use-universal-transaction'
-import { resolvePlatformFeeQuote } from '@/lib/pricing/platform-fee'
+import { getPushPublicClient } from '@/lib/onchain/push-chain'
+import {
+  resolvePlatformFeeQuote,
+  validatePlatformFeeBalance
+} from '@/lib/pricing/platform-fee'
 import { useGroupContext } from '../context/group-context'
 
 type RenewResult = {
@@ -17,6 +21,7 @@ export function useRenewSubscription() {
   const { group } = useGroupContext()
   const { address, pushChainClient, originChain } = usePushAccount()
   const { sendTransaction } = useUniversalTransaction()
+  const publicClient = useMemo(() => getPushPublicClient(), [])
   const { mutate, pending: isMutating } = useApiMutation(
     api.groups.renewSubscription
   )
@@ -44,6 +49,18 @@ export function useRenewSubscription() {
         originChain: originChain ?? null,
         treasuryAddress
       })
+
+      const balanceCheck = await validatePlatformFeeBalance({
+        quote: feeQuote,
+        pushAccount: address as `0x${string}`,
+        pushPublicClient: publicClient,
+        pushChainClient,
+        originChain: originChain ?? null
+      })
+
+      if (!balanceCheck.ok) {
+        throw new Error(balanceCheck.reason)
+      }
 
       const txResponse = await sendTransaction(
         feeQuote.params,

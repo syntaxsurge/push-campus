@@ -1,4 +1,10 @@
 import { PushChain as PushChainSdk } from '@pushchain/core'
+import { CHAIN_INFO } from '@pushchain/core/src/lib/constants/chain'
+import { VM } from '@pushchain/core/src/lib/constants/enums'
+
+import type { PublicClient } from 'viem'
+import { createPublicClient, erc20Abi, http } from 'viem'
+import { Connection, PublicKey } from '@solana/web3.js'
 
 import { PLATFORM_TREASURY_ADDRESS, SUBSCRIPTION_PRICE_USD } from '@/lib/config'
 import { parseNativeTokenAmount } from '@/lib/native-token'
@@ -11,6 +17,19 @@ type MoveableToken = {
 }
 
 type PushChainClient = unknown
+
+type BalanceValidationArgs = {
+  quote: PlatformFeeQuote
+  pushAccount?: `0x${string}` | null
+  pushPublicClient?: PublicClient | null
+  pushChainClient?: PushChainClient | null
+  originChain?: string | null
+  originAddress?: string | null
+}
+
+type BalanceValidationResult =
+  | { ok: true }
+  | { ok: false; reason: string }
 
 const PRICE_CACHE_TTL_MS = 60_000
 
@@ -276,4 +295,258 @@ export async function resolvePlatformFeeQuote(options: {
       }
     }
   }
+}
+
+function resolveOriginAccount(pushChainClient?: PushChainClient | null) {
+  const origin = (pushChainClient as any)?.universal?.origin
+  if (origin && typeof origin === 'object') {
+    return {
+      address: (origin.address ?? null) as string | null,
+      chain: (origin.chain ?? null) as string | null
+    }
+  }
+  return {
+    address: null,
+    chain: null
+  }
+}
+
+function formatTokenShort(amount: bigint, token: MoveableToken) {
+  return formatTokenAmount(amount, token.decimals, token.symbol)
+}
+
+async function validatePushBalance({
+  quote,
+  pushAccount,
+  pushPublicClient
+}: {
+  quote: PlatformFeeQuote
+  pushAccount?: `0x${string}` | null
+  pushPublicClient?: PublicClient | null
+}): Promise<BalanceValidationResult> {
+  if (!pushAccount || !pushPublicClient) {
+    return { ok: true }
+  }
+
+  const value = quote.params.value ?? 0n
+  if (value === 0n) {
+    return { ok: true }
+  }
+
+  try {
+    const [balance, gasPrice, gasEstimate] = await Promise.all([
+      pushPublicClient.getBalance({ address: pushAccount }),
+      pushPublicClient.getGasPrice(),
+      pushPublicClient
+        .estimateGas({
+          account: pushAccount,
+          to: quote.params.to,
+          value
+        })
+        .catch(() => 50_000n) // Fallback buffer
+    ])
+
+    const totalCost = value + gasPrice * gasEstimate
+    if (balance < totalCost) {
+      const shortfall = totalCost - balance
+      return {
+        ok: false,
+        reason: `You need at least ${formatTokenAmount(totalCost, DEFAULT_PUSH_CONFIG.decimals, DEFAULT_PUSH_CONFIG.symbol)} on Push Chain to cover the platform fee and gas. You are short by ${formatTokenAmount(shortfall, DEFAULT_PUSH_CONFIG.decimals, DEFAULT_PUSH_CONFIG.symbol)}.`
+      }
+    }
+
+    return { ok: true }
+  } catch {
+    return { ok: true }
+  }
+}
+
+async function validateEvmOriginBalance({
+  quote,
+  originAddress,
+  chainInfo
+}: {
+  quote: PlatformFeeQuote
+  originAddress: `0x${string}`
+  chainInfo: (typeof CHAIN_INFO)[keyof typeof CHAIN_INFO]
+}): Promise<BalanceValidationResult> {
+  const funds = quote.params.funds
+  if (!funds) {
+    return { ok: true }
+  }
+
+  const rpcUrl = chainInfo.defaultRPC?.[0]
+  if (!rpcUrl) {
+    return { ok: true }
+  }
+
+  const evmClient = createPublicClient({
+    transport: http(rpcUrl)
+  })
+
+  try {
+    const gasPrice = await evmClient.getGasPrice()
+    const gasBuffer = gasPrice * 200_000n
+    const nativeBalance = await evmClient.getBalance({ address: originAddress })
+
+    if (funds.token.mechanism === 'native') {
+      const required = funds.amount + gasBuffer
+      if (nativeBalance < required) {
+        const deficit = required - nativeBalance
+        return {
+          ok: false,
+          reason: `You need at least ${formatTokenShort(
+            required,
+            funds.token
+          )} on your origin wallet (including gas). You are short by ${formatTokenShort(
+            deficit,
+            funds.token
+          )}.`
+        }
+      }
+      return { ok: true }
+    }
+
+    if (nativeBalance < gasBuffer) {
+      return {
+        ok: false,
+        reason:
+          'You do not have enough native balance on your origin wallet to cover the gas fee required for this purchase.'
+      }
+    }
+
+    if (funds.token.address && funds.token.address.startsWith('0x')) {
+      const balance = await evmClient.readContract({
+        address: funds.token.address as `0x${string}`,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [originAddress]
+      })
+
+      if (balance < funds.amount) {
+        const deficit = funds.amount - balance
+        return {
+          ok: false,
+          reason: `You need at least ${formatTokenShort(
+            funds.amount,
+            funds.token
+          )} of ${funds.token.symbol} on your origin wallet. You are short by ${formatTokenShort(
+            deficit,
+            funds.token
+          )}.`
+        }
+      }
+    }
+
+    return { ok: true }
+  } catch {
+    return { ok: true }
+  }
+}
+
+async function validateSvmOriginBalance({
+  quote,
+  originAddress,
+  chainInfo
+}: {
+  quote: PlatformFeeQuote
+  originAddress: string
+  chainInfo: (typeof CHAIN_INFO)[keyof typeof CHAIN_INFO]
+}): Promise<BalanceValidationResult> {
+  const funds = quote.params.funds
+  if (!funds) {
+    return { ok: true }
+  }
+
+  const rpcUrl = chainInfo.defaultRPC?.[0]
+  if (!rpcUrl) {
+    return { ok: true }
+  }
+
+  try {
+    const connection = new Connection(rpcUrl)
+    const publicKey = new PublicKey(originAddress)
+
+    if (funds.token.mechanism === 'native') {
+      const lamports = await connection.getBalance(publicKey)
+      const required = funds.amount + 500_000n // ~0.0005 SOL buffer
+      if (BigInt(lamports) < required) {
+        const deficit = required - BigInt(lamports)
+        return {
+          ok: false,
+          reason: `You need at least ${formatTokenShort(
+            required,
+            funds.token
+          )} on your Solana wallet (including fees). You are short by ${formatTokenShort(
+            deficit,
+            funds.token
+          )}.`
+        }
+      }
+    }
+
+    // SPL token balance checks would require ATA discovery; defer for now.
+    return { ok: true }
+  } catch {
+    return { ok: true }
+  }
+}
+
+export async function validatePlatformFeeBalance({
+  quote,
+  pushAccount,
+  pushPublicClient,
+  pushChainClient,
+  originChain,
+  originAddress
+}: BalanceValidationArgs): Promise<BalanceValidationResult> {
+  const pushResult = await validatePushBalance({
+    quote,
+    pushAccount: pushAccount ?? null,
+    pushPublicClient: pushPublicClient ?? null
+  })
+  if (!pushResult.ok) {
+    return pushResult
+  }
+
+  const funds = quote.params.funds
+  if (!funds) {
+    return { ok: true }
+  }
+
+  const originMeta = resolveOriginAccount(pushChainClient)
+  const effectiveOriginChain = originMeta.chain ?? originChain ?? null
+  const effectiveOriginAddress =
+    (originMeta.address ??
+      originAddress) as `0x${string}` | string | null
+
+  if (!effectiveOriginChain || !effectiveOriginAddress) {
+    return { ok: true }
+  }
+
+  const chainInfo = CHAIN_INFO[effectiveOriginChain as keyof typeof CHAIN_INFO]
+  if (!chainInfo) {
+    return { ok: true }
+  }
+
+  if (chainInfo.vm === VM.EVM) {
+    if (!effectiveOriginAddress.toLowerCase().startsWith('0x')) {
+      return { ok: true }
+    }
+    return validateEvmOriginBalance({
+      quote,
+      originAddress: effectiveOriginAddress as `0x${string}`,
+      chainInfo
+    })
+  }
+
+  if (chainInfo.vm === VM.SVM) {
+    return validateSvmOriginBalance({
+      quote,
+      originAddress: effectiveOriginAddress,
+      chainInfo
+    })
+  }
+
+  return { ok: true }
 }

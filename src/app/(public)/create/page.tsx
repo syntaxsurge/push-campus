@@ -41,7 +41,10 @@ import { useAppRouter } from '@/hooks/use-app-router'
 import { usePlatformFeeQuote } from '@/hooks/use-platform-fee-quote'
 import { usePushAccount } from '@/hooks/use-push-account'
 import { useUniversalTransaction } from '@/hooks/use-universal-transaction'
-import { resolvePlatformFeeQuote } from '@/lib/pricing/platform-fee'
+import {
+  resolvePlatformFeeQuote,
+  validatePlatformFeeBalance
+} from '@/lib/pricing/platform-fee'
 
 const createGroupSchema = z
   .object({
@@ -196,6 +199,19 @@ export default function Create() {
         originChain: originChain ?? null,
         treasuryAddress
       })
+
+      const balanceCheck = await validatePlatformFeeBalance({
+        quote: feeQuote,
+        pushAccount: address as `0x${string}`,
+        pushPublicClient: publicClient,
+        pushChainClient,
+        originChain: originChain ?? null
+      })
+
+      if (!balanceCheck.ok) {
+        toast.error(balanceCheck.reason)
+        return
+      }
 
       // Precompute price & course id so we can preflight the registrar call
       const priceString =
