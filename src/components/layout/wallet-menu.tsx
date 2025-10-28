@@ -11,6 +11,18 @@ import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { UNIVERSAL_WALLET_UID } from '@/lib/config'
 
+const CHAIN_LABELS: Record<string, string> = {
+  'eip155:42101': 'Push Donut Testnet',
+  'eip155:11155111': 'Ethereum Sepolia',
+  'eip155:1': 'Ethereum Mainnet',
+  'eip155:421614': 'Arbitrum Sepolia',
+  'eip155:84532': 'Base Sepolia',
+  'eip155:97': 'BNB Testnet',
+  'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1': 'Solana Devnet',
+  'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z': 'Solana Testnet',
+  'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'Solana Mainnet'
+}
+
 function useWalletBadge() {
   const { connectionStatus } = usePushWalletContext(UNIVERSAL_WALLET_UID)
   const { pushChainClient, isInitialized } = usePushChainClient(UNIVERSAL_WALLET_UID)
@@ -18,8 +30,7 @@ function useWalletBadge() {
   const networkLabel = useMemo(() => {
     const chainNamespace = pushChainClient?.universal.origin.chain
     if (!chainNamespace) return null
-    if (chainNamespace === 'eip155:42101') return 'Push Donut Testnet'
-    return chainNamespace
+    return CHAIN_LABELS[chainNamespace] ?? chainNamespace
   }, [pushChainClient?.universal.origin.chain])
 
   const status =
