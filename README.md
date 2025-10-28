@@ -1,6 +1,6 @@
 # PushCampus: Universal Communities on Push Chain
 
-[![Push Campus Demo](public/images/push-campus-homepage.png)](https://www.youtube.com/watch?v=C_squUflvDs)
+[![Push Campus Demo](public/images/push-campus-demo.png)](https://www.youtube.com/watch?v=C_squUflvDs)
 
 
 PushCampus lets creators run paid communities and cohort-driven courses on Push Chain’s Donut testnet using portable onchain memberships with a built-in marketplace and clear collaborator payouts — all inside one app.
