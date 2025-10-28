@@ -25,6 +25,7 @@ import {
 import { MembershipPassService } from '@/lib/onchain/services/membershipPassService'
 import { getPushPublicClient } from '@/lib/onchain/push-chain'
 import { usePushAccount } from '@/hooks/use-push-account'
+import { useTokenUsdRate } from '@/hooks/use-token-usd-rate'
 import { GroupDescriptionEditor } from './group-description-editor'
 import { GroupMediaCarousel } from './group-media-carousel'
 import { useGroupContext } from '../context/group-context'
@@ -49,6 +50,7 @@ export function GroupAboutSection() {
     subscription
   } = useGroupContext()
   const { address, pushChainClient } = usePushAccount()
+  const { rate: pushUsdRate } = useTokenUsdRate('push-protocol', { autoFetch: true })
   const publicClient = useMemo(() => getPushPublicClient(), [])
   const membershipAddress = useMemo(() => {
     const value = MEMBERSHIP_CONTRACT_ADDRESS?.trim()
@@ -191,11 +193,10 @@ export function GroupAboutSection() {
       ? memberCount
       : group.memberNumber ?? 0
 
-  const priceLabel = formatGroupPriceLabel(
-    group.price,
-    group.billingCadence,
-    { includeCadence: true }
-  )
+  const priceLabel = formatGroupPriceLabel(group.price, group.billingCadence, {
+    includeCadence: true,
+    usdRate: pushUsdRate ?? null
+  })
 
   const creatorName =
     owner?.displayName ??

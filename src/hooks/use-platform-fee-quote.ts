@@ -9,7 +9,27 @@ import {
 } from '@/lib/pricing/platform-fee'
 import { usePushAccount } from '@/hooks/use-push-account'
 
-export function usePlatformFeeQuote() {
+type UsePlatformFeeQuoteOptions = {
+  autoFetch?: boolean
+}
+
+const USD_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2
+})
+
+function formatSubscriptionUsdLabel() {
+  const parsed = Number(SUBSCRIPTION_PRICE_USD)
+  if (!Number.isFinite(parsed)) {
+    return `$${SUBSCRIPTION_PRICE_USD} USD/month`
+  }
+  return `${USD_FORMATTER.format(parsed)}/month`
+}
+
+export function usePlatformFeeQuote(options: UsePlatformFeeQuoteOptions = {}) {
+  const { autoFetch = false } = options
   const { pushChainClient, originChain } = usePushAccount()
   const [quote, setQuote] = useState<PlatformFeeQuote | null>(null)
   const [loading, setLoading] = useState(false)
@@ -37,19 +57,21 @@ export function usePlatformFeeQuote() {
   }, [originChain, pushChainClient])
 
   useEffect(() => {
+    if (!autoFetch) return
     void refresh()
-  }, [refresh])
+  }, [autoFetch, refresh])
 
-  const label = useMemo(() => {
-    if (!quote) {
-      return `$${SUBSCRIPTION_PRICE_USD} USD`
-    }
-    return `${quote.displayAmount}/month`
-  }, [quote])
+  const usdLabel = useMemo(() => formatSubscriptionUsdLabel(), [])
+  const nativeLabel = useMemo(
+    () => (quote ? `${quote.displayAmount}/month` : null),
+    [quote]
+  )
 
   return {
     quote,
-    label,
+    label: usdLabel,
+    usdLabel,
+    nativeLabel,
     loading,
     error,
     refresh

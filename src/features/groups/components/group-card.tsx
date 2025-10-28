@@ -7,6 +7,7 @@ import { Users } from 'lucide-react'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { cn } from '@/lib/utils'
 import { useAppRouter } from '@/hooks/use-app-router'
+import { useTokenUsdRate } from '@/hooks/use-token-usd-rate'
 import { formatGroupPriceLabel } from '../utils/price'
 
 type GroupCardProps = {
@@ -33,11 +34,17 @@ export function GroupCard({
   className
 }: GroupCardProps) {
   const router = useAppRouter()
+  const { rate: pushUsdRate } = useTokenUsdRate('push-protocol', { autoFetch: true })
   const memberLabel = memberCount === 1 ? 'member' : 'members'
 
   const handleNavigate = () => {
     router.push(`/${group._id}/about`)
   }
+
+  const priceLabel = formatGroupPriceLabel(group.price, group.billingCadence, {
+    includeCadence: true,
+    usdRate: pushUsdRate ?? null
+  })
 
   return (
     <button
@@ -69,9 +76,7 @@ export function GroupCard({
         {/* Price badge overlay */}
         <div className='absolute right-4 top-4 rounded-lg bg-primary/90 px-3 py-1.5 backdrop-blur-sm'>
           <span className='text-xs font-bold uppercase tracking-wider text-primary-foreground'>
-            {formatGroupPriceLabel(group.price, group.billingCadence, {
-              includeCadence: true
-            })}
+            {priceLabel}
           </span>
         </div>
 

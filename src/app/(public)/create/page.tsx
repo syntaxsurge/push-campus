@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from 'convex/react'
@@ -10,6 +10,14 @@ import { z } from 'zod'
 
 import { Logo } from '@/components/layout/logo'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -41,10 +49,8 @@ import { useAppRouter } from '@/hooks/use-app-router'
 import { usePlatformFeeQuote } from '@/hooks/use-platform-fee-quote'
 import { usePushAccount } from '@/hooks/use-push-account'
 import { useUniversalTransaction } from '@/hooks/use-universal-transaction'
-import {
-  resolvePlatformFeeQuote,
-  validatePlatformFeeBalance
-} from '@/lib/pricing/platform-fee'
+import type { PlatformFeeQuote } from '@/lib/pricing/platform-fee'
+import { validatePlatformFeeBalance } from '@/lib/pricing/platform-fee'
 
 const createGroupSchema = z
   .object({
@@ -134,11 +140,23 @@ export default function Create() {
   const router = useAppRouter()
   const { address, pushChainClient, originChain } = usePushAccount()
   const { sendTransaction } = useUniversalTransaction()
-  const { label: platformFeeLabel, refresh: refreshPlatformFee } = usePlatformFeeQuote()
+  const {
+    quote: cachedPlatformFeeQuote,
+    usdLabel: platformFeeUsdLabel,
+    nativeLabel: platformFeeNativeLabel,
+    refresh: refreshPlatformFee
+  } = usePlatformFeeQuote()
   const publicClient = useMemo(() => getPushPublicClient(), [])
   const createGroup = useMutation(api.groups.create)
   const generateUploadUrl = useMutation(api.media.generateUploadUrl)
   const requestUploadUrl = useCallback(() => generateUploadUrl({}), [generateUploadUrl])
+  const [confirmationOpen, setConfirmationOpen] = useState(false)
+  const [pendingValues, setPendingValues] =
+    useState<CreateGroupFormValues | null>(null)
+  const [pendingQuote, setPendingQuote] = useState<PlatformFeeQuote | null>(
+    () => cachedPlatformFeeQuote
+  )
+  const [isFinalizing, setIsFinalizing] = useState(false)
 
   const form = useForm<CreateGroupFormValues>({
     resolver: zodResolver(createGroupSchema),
@@ -159,9 +177,10 @@ export default function Create() {
     }
   }, [billingCadence, form])
 
-  const isProcessing = form.formState.isSubmitting
+  const isProcessing = form.formState.isSubmitting || isFinalizing
 
-  const handleSubmit = async (values: CreateGroupFormValues) => {
+  const performCreation = useCallback(
+    async (values: CreateGroupFormValues, feeQuote: PlatformFeeQuote) => {
     let txHash: `0x${string}` | null = null
 
     if (!address) {
@@ -194,12 +213,6 @@ export default function Create() {
     })
 
     try {
-      const feeQuote = await resolvePlatformFeeQuote({
-        pushChainClient,
-        originChain: originChain ?? null,
-        treasuryAddress
-      })
-
       const balanceCheck = await validatePlatformFeeBalance({
         quote: feeQuote,
         pushAccount: address as `0x${string}`,
@@ -331,18 +344,69 @@ export default function Create() {
           : 'Payment failed. Please try again.'
       toast.error(message)
     }
+  },
+    [
+      address,
+      createGroup,
+      originChain,
+      publicClient,
+      pushChainClient,
+      refreshPlatformFee,
+      router,
+      sendTransaction
+    ]
+  )
+
+  const handleSubmit = async (values: CreateGroupFormValues) => {
+    try {
+      const quote = await refreshPlatformFee()
+      setPendingValues(values)
+      setPendingQuote(quote)
+      setConfirmationOpen(true)
+    } catch (error) {
+      console.error('Failed to resolve platform fee quote', error)
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Unable to prepare the platform fee payment. Please try again.'
+      )
+    }
+  }
+
+  const handleConfirmSubmission = async () => {
+    if (!pendingValues || !pendingQuote) {
+      setConfirmationOpen(false)
+      return
+    }
+
+    setConfirmationOpen(false)
+    setIsFinalizing(true)
+    try {
+      await performCreation(pendingValues, pendingQuote)
+    } finally {
+      setIsFinalizing(false)
+      setPendingValues(null)
+      setPendingQuote(null)
+    }
+  }
+
+  const handleCancelConfirmation = () => {
+    setConfirmationOpen(false)
+    setPendingValues(null)
+    setPendingQuote(null)
   }
 
   return (
-    <div className='relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-muted/20'>
-      {/* Enhanced decorative background with logo blue */}
-      <div className='absolute inset-0 overflow-hidden'>
-        <div className='absolute -left-4 top-0 h-72 w-72 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue)/0.15),_transparent_65%)] blur-3xl' />
-        <div className='absolute -right-4 top-1/4 h-96 w-96 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue-light)/0.12),_transparent_65%)] blur-3xl' />
-        <div className='absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue)/0.1),_transparent_70%)] blur-3xl' />
-      </div>
+    <>
+      <div className='relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-muted/20'>
+        {/* Enhanced decorative background with logo blue */}
+        <div className='absolute inset-0 overflow-hidden'>
+          <div className='absolute -left-4 top-0 h-72 w-72 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue)/0.15),_transparent_65%)] blur-3xl' />
+          <div className='absolute -right-4 top-1/4 h-96 w-96 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue-light)/0.12),_transparent_65%)] blur-3xl' />
+          <div className='absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[radial-gradient(circle,_hsl(var(--brand-blue)/0.1),_transparent_70%)] blur-3xl' />
+        </div>
 
-      <div className='relative mx-auto max-w-6xl px-6 py-12'>
+        <div className='relative mx-auto max-w-6xl px-6 py-12'>
         {/* Header */}
         <div className='mb-12 text-center'>
           <div className='mb-6 flex justify-center'>
@@ -365,7 +429,7 @@ export default function Create() {
             <div className='flex items-center justify-between'>
               <div>
                 <p className='text-sm font-medium text-muted-foreground'>Platform fee</p>
-                <p className='text-3xl font-bold text-foreground'>{platformFeeLabel}</p>
+                <p className='text-3xl font-bold text-foreground'>{platformFeeUsdLabel}</p>
               </div>
               <div className='rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary'>
                 Renews monthly
@@ -618,5 +682,58 @@ export default function Create() {
         </div>
       </div>
     </div>
+      <Dialog
+        open={confirmationOpen}
+        onOpenChange={open => {
+          if (!open) {
+            handleCancelConfirmation()
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm platform fee payment</DialogTitle>
+            <DialogDescription>
+              We&apos;ll charge the monthly platform fee before publishing your community.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-3 py-2'>
+            <div className='flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2'>
+              <span className='text-sm font-medium text-muted-foreground'>Billing amount</span>
+              <span className='text-sm font-semibold text-foreground'>{platformFeeUsdLabel}</span>
+            </div>
+            <div className='rounded-lg border border-dashed border-border/60 px-3 py-2'>
+              <p className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Settlement</p>
+              <p className='mt-1 text-sm font-semibold text-foreground'>
+                {pendingQuote?.displayAmount ??
+                  cachedPlatformFeeQuote?.displayAmount ??
+                  platformFeeNativeLabel ??
+                  'Resolving…'}
+              </p>
+              <p className='text-xs text-muted-foreground'>
+                Paid to treasury {pendingQuote?.treasuryAddress ?? cachedPlatformFeeQuote?.treasuryAddress ?? PLATFORM_TREASURY_ADDRESS}.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className='flex gap-2 sm:justify-end'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={handleCancelConfirmation}
+              disabled={isFinalizing}
+            >
+              Cancel
+            </Button>
+            <Button
+              type='button'
+              onClick={handleConfirmSubmission}
+              disabled={isFinalizing || !pendingQuote}
+            >
+              {isFinalizing ? 'Processing…' : 'Pay and continue'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

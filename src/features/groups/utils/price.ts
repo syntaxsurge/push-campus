@@ -5,18 +5,29 @@ const TOKEN_FORMATTER = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 4
 })
 
+const USD_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2
+})
+
 type BillingCadence = 'free' | 'monthly' | undefined
 
 export function formatGroupPriceLabel(
   price: number | undefined,
   cadence: BillingCadence,
-  options?: { includeCadence?: boolean }
+  options?: { includeCadence?: boolean; usdRate?: number | null }
 ) {
   const includeCadence = options?.includeCadence ?? true
   if (!price || price <= 0 || cadence === 'free') {
     return includeCadence ? 'Free' : 'Join for free'
   }
-  const amount = `${TOKEN_FORMATTER.format(price)} ${NATIVE_TOKEN_SYMBOL}`
+  const usdRate = options?.usdRate
+  const amount =
+    typeof usdRate === 'number' && usdRate > 0
+      ? USD_FORMATTER.format(price * usdRate)
+      : `${TOKEN_FORMATTER.format(price)} ${NATIVE_TOKEN_SYMBOL}`
   if (!includeCadence) {
     return amount
   }

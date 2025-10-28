@@ -6,6 +6,8 @@ import type { PublicClient } from 'viem'
 import { createPublicClient, erc20Abi, http } from 'viem'
 import { Connection, PublicKey } from '@solana/web3.js'
 
+import { getCoingeckoUsdPrice } from '@/lib/pricing/coingecko'
+
 import { PLATFORM_TREASURY_ADDRESS, SUBSCRIPTION_PRICE_USD } from '@/lib/config'
 import { parseNativeTokenAmount } from '@/lib/native-token'
 
@@ -30,17 +32,6 @@ type BalanceValidationArgs = {
 type BalanceValidationResult =
   | { ok: true }
   | { ok: false; reason: string }
-
-const PRICE_CACHE_TTL_MS = 60_000
-
-type CachedPrice = {
-  value: number
-  expiresAt: number
-}
-
-const priceCache = new Map<string, CachedPrice>()
-
-type CoingeckoResponse = Record<string, { usd?: number }>
 
 export type PlatformFeeQuote = {
   usdAmount: number
@@ -130,45 +121,21 @@ const DEFAULT_PUSH_CONFIG: PaymentConfig = {
   decimals: 18
 }
 
+const PLATFORM_FEE_CACHE_TTL_MS = 5 * 60_000
+
+type CachedFeeQuote = {
+  quote: PlatformFeeQuote
+  expiresAt: number
+}
+
+const platformFeeCache = new Map<string, CachedFeeQuote>()
+
 function formatTokenAmount(amount: bigint, decimals: number, symbol: string) {
   const formatted = PushChainSdk.utils.helpers.formatUnits(amount.toString(), {
     decimals,
     precision: Math.min(decimals, 6)
   })
   return `${formatted} ${symbol}`
-}
-
-async function fetchCoingeckoPrice(id: string) {
-  const cached = priceCache.get(id)
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.value
-  }
-
-  const response = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(id)}&vs_currencies=usd`,
-    {
-      headers: {
-        accept: 'application/json'
-      }
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch price for ${id} (${response.status})`)
-  }
-
-  const data = (await response.json()) as CoingeckoResponse
-  const price = data[id]?.usd
-  if (typeof price !== 'number' || !Number.isFinite(price)) {
-    throw new Error(`Invalid price payload for ${id}`)
-  }
-
-  priceCache.set(id, {
-    value: price,
-    expiresAt: Date.now() + PRICE_CACHE_TTL_MS
-  })
-
-  return price
 }
 
 function getPaymentConfig(originChain: string | null | undefined): PaymentConfig {
@@ -190,7 +157,7 @@ async function calculateAmountFromUsd({
   decimals: number
   coingeckoId: string
 }) {
-  const price = await fetchCoingeckoPrice(coingeckoId)
+  const price = await getCoingeckoUsdPrice(coingeckoId)
   if (price <= 0) {
     throw new Error(`Price for ${coingeckoId} must be positive`)
   }
@@ -225,6 +192,16 @@ function ensureTreasuryAddress(provided?: string | null) {
   return address
 }
 
+function getPlatformFeeCacheKey(
+  originChain: string | null | undefined,
+  treasury: `0x${string}`,
+  config: PaymentConfig
+) {
+  const originKey = originChain ?? 'push-chain'
+  const tokenAccessor = config.tokenAccessor ?? 'native'
+  return `${originKey}:${treasury}:${tokenAccessor}`
+}
+
 export async function resolvePlatformFeeQuote(options: {
   pushChainClient: PushChainClient | null
   originChain: string | null
@@ -233,6 +210,11 @@ export async function resolvePlatformFeeQuote(options: {
   const usdAmount = Number(SUBSCRIPTION_PRICE_USD)
   const treasuryAddress = ensureTreasuryAddress(options.treasuryAddress)
   const config = getPaymentConfig(options.originChain)
+  const cacheKey = getPlatformFeeCacheKey(options.originChain, treasuryAddress, config)
+  const cached = platformFeeCache.get(cacheKey)
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.quote
+  }
 
   try {
     const amount = await calculateAmountFromUsd({
@@ -242,7 +224,7 @@ export async function resolvePlatformFeeQuote(options: {
     })
 
     if (PUSH_CHAIN_IDS.has(options.originChain ?? '')) {
-      return {
+      const quote = {
         usdAmount,
         symbol: config.symbol,
         decimals: config.decimals,
@@ -254,6 +236,11 @@ export async function resolvePlatformFeeQuote(options: {
           value: amount
         }
       }
+      platformFeeCache.set(cacheKey, {
+        quote,
+        expiresAt: Date.now() + PLATFORM_FEE_CACHE_TTL_MS
+      })
+      return quote
     }
 
     const token = resolveMoveableToken(options.pushChainClient, config.tokenAccessor)
@@ -261,7 +248,7 @@ export async function resolvePlatformFeeQuote(options: {
       throw new Error('Unable to resolve token information for the connected chain.')
     }
 
-    return {
+    const quote = {
       usdAmount,
       symbol: config.symbol,
       decimals: config.decimals,
@@ -276,9 +263,14 @@ export async function resolvePlatformFeeQuote(options: {
         }
       }
     }
-  } catch (error) {
+    platformFeeCache.set(cacheKey, {
+      quote,
+      expiresAt: Date.now() + PLATFORM_FEE_CACHE_TTL_MS
+    })
+    return quote
+  } catch (_error) {
     const fallbackAmount = parseNativeTokenAmount(SUBSCRIPTION_PRICE_USD)
-    return {
+    const fallback = {
       usdAmount,
       symbol: DEFAULT_PUSH_CONFIG.symbol,
       decimals: DEFAULT_PUSH_CONFIG.decimals,
@@ -294,6 +286,11 @@ export async function resolvePlatformFeeQuote(options: {
         value: fallbackAmount
       }
     }
+    platformFeeCache.set(cacheKey, {
+      quote: fallback,
+      expiresAt: Date.now() + PLATFORM_FEE_CACHE_TTL_MS
+    })
+    return fallback
   }
 }
 
