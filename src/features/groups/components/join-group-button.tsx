@@ -76,18 +76,6 @@ export function JoinGroupButton() {
   const blockchainAddress = address as `0x${string}` | null
   const backendAddress = address as `0x${string}` | null
 
-  if (isOwner) {
-    return (
-      <Button className='w-full' variant='secondary' disabled>
-        You own this group
-      </Button>
-    )
-  }
-
-  if (isMember) {
-    return <LeaveGroupButton membershipService={membershipService} courseId={membershipCourseId} />
-  }
-
   const prepareJoin = useCallback(async (): Promise<JoinPreparation | null> => {
       if (!blockchainAddress || !backendAddress) {
         toast.error('Connect your wallet to join this group.')
@@ -298,6 +286,18 @@ export function JoinGroupButton() {
       membershipService
     ]
   )
+
+  if (isOwner) {
+    return (
+      <Button className='w-full' variant='secondary' disabled>
+        You own this group
+      </Button>
+    )
+  }
+
+  if (isMember) {
+    return <LeaveGroupButton membershipService={membershipService} courseId={membershipCourseId} />
+  }
 
   const handleJoin = async () => {
     if (isPreparing || isFinalizing) {
