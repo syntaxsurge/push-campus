@@ -2,14 +2,10 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { api } from '@/convex/_generated/api'
 import { useApiMutation } from '@/hooks/use-api-mutation'
-import {
-  NATIVE_TOKEN_SYMBOL,
-  PLATFORM_TREASURY_ADDRESS
-} from '@/lib/config'
-import { SUBSCRIPTION_PRICE_AMOUNT } from '@/lib/pricing'
-import { getPushPublicClient } from '@/lib/onchain/push-chain'
+import { PLATFORM_TREASURY_ADDRESS } from '@/lib/config'
 import { usePushAccount } from '@/hooks/use-push-account'
 import { useUniversalTransaction } from '@/hooks/use-universal-transaction'
+import { resolvePlatformFeeQuote } from '@/lib/pricing/platform-fee'
 import { useGroupContext } from '../context/group-context'
 
 type RenewResult = {
@@ -19,9 +15,8 @@ type RenewResult = {
 
 export function useRenewSubscription() {
   const { group } = useGroupContext()
-  const { address } = usePushAccount()
+  const { address, pushChainClient, originChain } = usePushAccount()
   const { sendTransaction } = useUniversalTransaction()
-  const publicClient = useMemo(() => getPushPublicClient(), [])
   const { mutate, pending: isMutating } = useApiMutation(
     api.groups.renewSubscription
   )
@@ -44,18 +39,20 @@ export function useRenewSubscription() {
 
     setIsTransacting(true)
     try {
-      const balance = await publicClient.getBalance({
-        address: address as `0x${string}`
+      const feeQuote = await resolvePlatformFeeQuote({
+        pushChainClient,
+        originChain: originChain ?? null,
+        treasuryAddress
       })
 
-      if (balance < SUBSCRIPTION_PRICE_AMOUNT) {
-        throw new Error(`Insufficient ${NATIVE_TOKEN_SYMBOL} balance to renew the subscription.`)
-      }
-
-      const txResponse = await sendTransaction({
-        to: treasuryAddress,
-        value: SUBSCRIPTION_PRICE_AMOUNT
-      })
+      const txResponse = await sendTransaction(
+        feeQuote.params,
+        {
+          pendingMessage: `Paying ${feeQuote.displayAmount} platform fee…`,
+          successMessage: 'Platform fee paid',
+          errorMessage: 'Unable to process platform fee'
+        }
+      )
 
       await txResponse.wait()
 
@@ -78,7 +75,8 @@ export function useRenewSubscription() {
     address,
     group?._id,
     mutate,
-    publicClient,
+    originChain,
+    pushChainClient,
     treasuryAddress,
     sendTransaction
   ])

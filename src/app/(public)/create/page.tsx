@@ -30,10 +30,6 @@ import {
   PLATFORM_TREASURY_ADDRESS,
   REGISTRAR_CONTRACT_ADDRESS
 } from '@/lib/config'
-import {
-  SUBSCRIPTION_PRICE_AMOUNT,
-  SUBSCRIPTION_PRICE_LABEL
-} from '@/lib/pricing'
 import { registrarAbi } from '@/lib/onchain/abi'
 import { getPushPublicClient } from '@/lib/onchain/push-chain'
 import { RegistrarService } from '@/lib/onchain/services'
@@ -42,8 +38,10 @@ import { GroupMediaFields } from '@/features/groups/components/group-media-field
 import { generateMembershipCourseId } from '@/features/groups/utils/membership'
 import { isValidMediaReference, normalizeMediaInput } from '@/features/groups/utils/media'
 import { useAppRouter } from '@/hooks/use-app-router'
+import { usePlatformFeeQuote } from '@/hooks/use-platform-fee-quote'
 import { usePushAccount } from '@/hooks/use-push-account'
 import { useUniversalTransaction } from '@/hooks/use-universal-transaction'
+import { resolvePlatformFeeQuote } from '@/lib/pricing/platform-fee'
 
 const createGroupSchema = z
   .object({
@@ -131,8 +129,9 @@ const DEFAULT_VALUES: CreateGroupFormValues = {
 
 export default function Create() {
   const router = useAppRouter()
-  const { address, pushChainClient } = usePushAccount()
+  const { address, pushChainClient, originChain } = usePushAccount()
   const { sendTransaction } = useUniversalTransaction()
+  const { label: platformFeeLabel, refresh: refreshPlatformFee } = usePlatformFeeQuote()
   const publicClient = useMemo(() => getPushPublicClient(), [])
   const createGroup = useMutation(api.groups.create)
   const generateUploadUrl = useMutation(api.media.generateUploadUrl)
@@ -192,16 +191,11 @@ export default function Create() {
     })
 
     try {
-      const nativeBalance = await publicClient.getBalance({
-        address: address as `0x${string}`
+      const feeQuote = await resolvePlatformFeeQuote({
+        pushChainClient,
+        originChain: originChain ?? null,
+        treasuryAddress
       })
-
-      if (nativeBalance < SUBSCRIPTION_PRICE_AMOUNT) {
-        toast.error(
-          `Insufficient ${NATIVE_TOKEN_SYMBOL} balance. You need ${SUBSCRIPTION_PRICE_LABEL}.`
-        )
-        return
-      }
 
       // Precompute price & course id so we can preflight the registrar call
       const priceString =
@@ -257,13 +251,18 @@ export default function Create() {
       }
 
       // Platform fee payment (after preflight so we don’t charge if wiring is broken)
-      const feeTx = await sendTransaction({
-        to: treasuryAddress,
-        value: SUBSCRIPTION_PRICE_AMOUNT
-      })
+      const feeTx = await sendTransaction(
+        feeQuote.params,
+        {
+          pendingMessage: `Paying ${feeQuote.displayAmount} platform fee…`,
+          successMessage: 'Platform fee paid',
+          errorMessage: 'Unable to process platform fee'
+        }
+      )
 
       txHash = feeTx.hash as `0x${string}`
       await feeTx.wait()
+      void refreshPlatformFee()
 
       const registerTx = await registrarService.registerCourse(
         courseId,
@@ -350,7 +349,7 @@ export default function Create() {
             <div className='flex items-center justify-between'>
               <div>
                 <p className='text-sm font-medium text-muted-foreground'>Platform fee</p>
-                <p className='text-3xl font-bold text-foreground'>{SUBSCRIPTION_PRICE_LABEL}</p>
+                <p className='text-3xl font-bold text-foreground'>{platformFeeLabel}</p>
               </div>
               <div className='rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary'>
                 Renews monthly

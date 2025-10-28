@@ -41,14 +41,12 @@ import {
   MembershipPassService,
   type MarketplaceListing
 } from '@/lib/onchain/services'
-import {
-  SUBSCRIPTION_PRICE_LABEL,
-  SUBSCRIPTION_PRICE_NATIVE
-} from '@/lib/pricing'
+import { SUBSCRIPTION_PRICE_NATIVE } from '@/lib/config'
 import { formatDurationShort, formatTimestampRelative } from '@/lib/time'
 import { formatNativeToken, parseNativeTokenAmount } from '@/lib/native-token'
 import { getPushPublicClient } from '@/lib/onchain/push-chain'
 import { usePushAccount } from '@/hooks/use-push-account'
+import { usePlatformFeeQuote } from '@/hooks/use-platform-fee-quote'
 
 const DEFAULT_LISTING_DURATION = 60n * 60n * 24n * 3n // 3 days
 const LISTING_DURATION_CHOICES: { label: string; value: bigint }[] = [
@@ -485,6 +483,8 @@ export function MarketplaceShell() {
     contractsConfigured
   } = useMarketplaceCore()
 
+  const { quote: platformFeeQuote, label: platformFeeLabel } = usePlatformFeeQuote()
+
   const [filters, setFilters] = useState<Filters>(defaultFilters)
 
   const filteredCourses = useMemo(() => {
@@ -577,10 +577,10 @@ export function MarketplaceShell() {
                   Primary price
                 </p>
                 <p className='mt-1 text-2xl font-bold text-foreground'>
-                  {SUBSCRIPTION_PRICE_LABEL}
+                  {platformFeeLabel}
                 </p>
                 <p className='mt-1 text-xs text-muted-foreground'>
-                  Settlement: {NATIVE_TOKEN_SYMBOL} on Push Chain
+                  Settlement asset: {platformFeeQuote?.symbol ?? NATIVE_TOKEN_SYMBOL}
                 </p>
               </div>
             </div>

@@ -4,15 +4,16 @@ import { AlertTriangle, Clock, RefreshCcw } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { SUBSCRIPTION_PRICE_LABEL } from '@/lib/pricing'
 import { formatTimestampRelative } from '@/lib/time'
 import { cn } from '@/lib/utils'
+import { usePlatformFeeQuote } from '@/hooks/use-platform-fee-quote'
 import { useGroupContext } from '../context/group-context'
 import { useRenewSubscription } from '../hooks/use-renew-subscription'
 
 export function GroupSubscriptionBanner() {
   const { isOwner, subscription } = useGroupContext()
   const { renew, isRenewing } = useRenewSubscription()
+  const { label: platformFeeLabel } = usePlatformFeeQuote()
 
   const shouldShowBanner = isOwner && (subscription.isExpired || subscription.isRenewalDue)
 
@@ -79,7 +80,7 @@ export function GroupSubscriptionBanner() {
                 : 'Renew soon to keep your community online.'}
             </p>
             <p className='text-xs text-muted-foreground'>
-              {statusLabel}. Pay {SUBSCRIPTION_PRICE_LABEL} to extend access for 30 days.
+              {statusLabel}. Pay {platformFeeLabel} to extend access for 30 days.
             </p>
           </div>
         </div>

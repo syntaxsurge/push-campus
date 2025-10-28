@@ -35,7 +35,6 @@ import { registrarAbi } from '@/lib/onchain/abi'
 import { RegistrarService } from '@/lib/onchain/services/registrarService'
 import { MembershipPassService } from '@/lib/onchain/services/membershipPassService'
 import { getPushPublicClient } from '@/lib/onchain/push-chain'
-import { SUBSCRIPTION_PRICE_LABEL } from '@/lib/pricing'
 import { parseNativeTokenAmount } from '@/lib/native-token'
 import { formatTimestampRelative } from '@/lib/time'
 import { cn } from '@/lib/utils'
@@ -46,6 +45,7 @@ import { isValidMediaReference, normalizeMediaInput } from '../utils/media'
 import { useRenewSubscription } from '../hooks/use-renew-subscription'
 import { useAppRouter } from '@/hooks/use-app-router'
 import { usePushAccount } from '@/hooks/use-push-account'
+import { usePlatformFeeQuote } from '@/hooks/use-platform-fee-quote'
 
 const administratorSchema = z.object({
   walletAddress: z
@@ -186,6 +186,7 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
   const [isRegisteringCourse, setIsRegisteringCourse] = useState(false)
   const [isResettingCourseId, setIsResettingCourseId] = useState(false)
   const { renew: triggerRenewSubscription, isRenewing: isSubscriptionRenewing } = useRenewSubscription()
+  const { label: platformFeeLabel } = usePlatformFeeQuote()
   const membershipCourseId = useMemo(() => resolveMembershipCourseId(group), [group])
   const membershipAddress = MEMBERSHIP_CONTRACT_ADDRESS as `0x${string}` | ''
   const registrarAddress = REGISTRAR_CONTRACT_ADDRESS as `0x${string}` | ''
@@ -674,7 +675,7 @@ export function GroupSettingsForm({ group }: GroupSettingsFormProps) {
                 Platform subscription
               </h3>
               <p className='text-xs text-muted-foreground'>
-                {subscriptionCardDescription} Pay {SUBSCRIPTION_PRICE_LABEL} to extend access for 30 days.
+                {subscriptionCardDescription} Pay {platformFeeLabel} to extend access for 30 days.
               </p>
             </div>
             <div className='text-xs text-muted-foreground sm:text-right'>
