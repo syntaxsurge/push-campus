@@ -341,6 +341,9 @@ export function JoinGroupButton() {
   const nativePriceLabel = formatGroupPriceLabel(group.price, group.billingCadence, {
     includeCadence: true
   })
+  const nativeSettlementLabel = formatGroupPriceLabel(group.price, group.billingCadence, {
+    includeCadence: false
+  })
 
   const handleCancelConfirmation = () => {
     if (isFinalizing) return
@@ -383,20 +386,20 @@ export function JoinGroupButton() {
           </DialogHeader>
           <div className='space-y-3 py-2'>
             <div className='flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2'>
-              <span className='text-sm font-medium text-muted-foreground'>Membership price</span>
+              <span className='text-sm font-medium text-muted-foreground'>Billing amount</span>
               <span className='text-sm font-semibold text-foreground'>
-                {usdPriceLabel === 'Free' ? nativePriceLabel : usdPriceLabel}
+                {usdPriceLabel === 'Free' ? 'Free' : usdPriceLabel}
               </span>
             </div>
             <div className='rounded-lg border border-dashed border-border/60 px-3 py-2'>
               <p className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
-                Settlement
+                Settlement amount
               </p>
               <p className='mt-1 text-sm font-semibold text-foreground'>
-                {nativePriceLabel}
+                {nativeSettlementLabel ?? 'Resolving...'}
               </p>
               <p className='text-xs text-muted-foreground'>
-                Paid in {NATIVE_TOKEN_SYMBOL}. Gas fees apply separately.
+                Converted to the connected chain&apos;s native token during checkout. Gas fees apply separately.
               </p>
             </div>
           </div>

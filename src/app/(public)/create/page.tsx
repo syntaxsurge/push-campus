@@ -34,7 +34,6 @@ import { api } from '@/convex/_generated/api'
 import {
   MEMBERSHIP_DURATION_SECONDS,
   MEMBERSHIP_TRANSFER_COOLDOWN_SECONDS,
-  NATIVE_TOKEN_SYMBOL,
   PLATFORM_TREASURY_ADDRESS,
   REGISTRAR_CONTRACT_ADDRESS
 } from '@/lib/config'
@@ -48,7 +47,6 @@ import { isValidMediaReference, normalizeMediaInput } from '@/features/groups/ut
 import { useAppRouter } from '@/hooks/use-app-router'
 import { usePlatformFeeQuote } from '@/hooks/use-platform-fee-quote'
 import { usePushAccount } from '@/hooks/use-push-account'
-import { useTokenUsdRate } from '@/hooks/use-token-usd-rate'
 import { useUniversalTransaction } from '@/hooks/use-universal-transaction'
 import type { PlatformFeeQuote } from '@/lib/pricing/platform-fee'
 import { validatePlatformFeeBalance } from '@/lib/pricing/platform-fee'
@@ -147,10 +145,6 @@ export default function Create() {
     nativeLabel: platformFeeNativeLabel,
     refresh: refreshPlatformFee
   } = usePlatformFeeQuote()
-  const { rate: pushUsdRate } = useTokenUsdRate('push-protocol', {
-    autoFetch: true,
-    fallbackRate: 1
-  })
   const publicClient = useMemo(() => getPushPublicClient(), [])
   const createGroup = useMutation(api.groups.create)
   const generateUploadUrl = useMutation(api.media.generateUploadUrl)
@@ -169,27 +163,6 @@ export default function Create() {
   })
 
   const billingCadence = form.watch('billingCadence')
-  const priceInputValue = form.watch('price')
-  const usdFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2
-      }),
-    []
-  )
-  const priceNativeValue = useMemo(() => {
-    if (!priceInputValue) return 0
-    const parsed = Number(priceInputValue)
-    if (!Number.isFinite(parsed)) return 0
-    return parsed
-  }, [priceInputValue])
-  const approximateUsd = useMemo(() => {
-    if (!pushUsdRate || pushUsdRate <= 0) return null
-    return priceNativeValue * pushUsdRate
-  }, [priceNativeValue, pushUsdRate])
 
   useEffect(() => {
     if (
@@ -618,7 +591,7 @@ export default function Create() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className='text-sm font-semibold'>
-                          Monthly price
+                          Monthly price (USD)
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -631,10 +604,7 @@ export default function Create() {
                           />
                         </FormControl>
                         <FormDescription className='text-xs text-muted-foreground'>
-                          Settled in {NATIVE_TOKEN_SYMBOL}. Approximate USD charge:{' '}
-                          {approximateUsd !== null
-                            ? `${usdFormatter.format(approximateUsd)}/month`
-                            : 'resolving…'}
+                          Members are billed this USD amount each month; we convert it to the connected chain's native token during checkout.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -699,7 +669,7 @@ export default function Create() {
                     className='h-12 w-full bg-gradient-to-r from-brand-blue to-brand-blue-light text-base font-semibold uppercase tracking-wide hover:opacity-90 shadow-lg shadow-primary/20'
                     size='lg'
                   >
-                    {isProcessing ? 'Deploying Universal App...' : 'Deploy Universal App'}
+                    {isProcessing ? 'Creating Community...' : 'Create Community'}
                   </Button>
                   <p className='mt-3 text-center text-xs text-muted-foreground'>
                     By deploying, you agree to our terms. Your app will be accessible across all supported chains.
